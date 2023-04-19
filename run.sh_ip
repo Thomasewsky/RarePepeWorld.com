@@ -1,0 +1,9 @@
+#!/bin/bash
+. .venv/bin/activate
+export FLASK_APP=rpw # package name
+export FLASK_SERVER_NAME=192.168.122.96 # domain ip address
+export FLASK_RUN_PORT=55000 # service port
+export RPW_LOG_LEVEL="DEBUG" #one of 'DEBUG', 'INFO', 'WARNING', 'ERROR', or 'CRITICAL'
+export RPW_SCRIPT_BASE=$(pwd) # base path of run data
+export RPW_LOG_PATH="$(pwd)/logs/" # default log path
+flask run --debug --host=0.0.0.0

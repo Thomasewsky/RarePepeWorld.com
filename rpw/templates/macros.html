@@ -1,0 +1,217 @@
+{# FEATURED PEPES SECTION #}
+{% macro show_featured_pepes(featured_pepes_view_data) %}
+    <!-- Features section -->
+    <div id="featured-section-base" class="container-fluid pb-4">
+        <div id="featured-section-subdiv" class="container">
+            <a href="/advertise" class="link-undecorated"><h2 id="featured-section-heading" class="p-2">FEATURED PEPES</h2>
+            </a>
+            <div id="featured-section-row" class="row">
+                {% for featured_pepe in featured_pepes_view_data.values() %}
+                    <div class="col">
+                        <a href="{{ featured_pepe['pepe_url'] }}">
+                            <img class="pepe-image mb-3" src="{{ featured_pepe['pepe_image_url'] }}" width="60%"
+                                 height="auto" alt="">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# LATEST DISPENSERS SECTION #}
+{% macro show_latest_dispensers_table(dispensers_grid_data) %}
+    <!-- Latest dispensers section -->
+    <div id="latest-dispensers-section" class="container-fluid m-0">
+        <div id="latest-dispensers-section-subdiv" class="container">
+            <h2 id="latest-dispensers-section-heading">{{ dispensers_grid_data['grid_title'] }}</h2>
+            <div id="latest-dispensers-section-row" class="row">
+                {% for card in dispensers_grid_data['cards'] %}
+                    <div class="col col-md-2">
+                        <div class="text-center" id="card_pepe_name">
+                    <span class="font-weight-bold">
+                        <a class="link-undecorated" href="{{ card['pepe_url'] }}"><span
+                                class="font-weight-bold">{{ card['pepe_name'] }}</span></a>
+                    </span>
+                        </div>
+                        <div class="text-center" id="card-image">
+                            <a class="link-undecorated" href="{{ card['pepe_url'] }}"><img class="card-image rounded"
+                                                                                           src="{{ card['pepe_image_url'] }}"
+                                                                                           height="150"
+                                                                                           alt="{{ card['pepe_name'] }}"></a>
+                        </div>
+                        <div class="sub-data text-center">
+                            <span id="card-line-1"><a class="link-undecorated"
+                                                      href="{{ card['pepe_url'] }}">{{ card['pay'] }}</a></span>
+                            <span id="card-line-2"> | <a class="link-undecorated"
+                                                         href="{{ card['pepe_url'] }}">{{ card['stock'] }} / {{ card['supply'] }}</a></span>
+                        </div>
+                        <p></p>
+                    </div>
+                {% endfor %}
+            </div>
+            <p><br/></p>
+        </div>
+    </div>
+{% endmacro %}
+
+
+{# SHOW DISPENSERS TABLE SECTION#}
+{% macro show_dispensers_table(dispensers_table_data) %}
+    <!-- dispensers_table section -->
+    <div id="dispensers-section" class="container-fluid">
+        <div id="dispensers-section-subdiv" class="container">
+            <!-- <h2 id="dispensers-section-heading">{{dispensers_table_data['table_title']}}</h2> -->
+            <br>
+            <div id="dispensers-table-div" class="table-responsive">
+                <table id="dispensers-table" class="table table-striped">
+                    <thead id="dispenser-table-thead">
+                    <tr id="dispenser-table-row">{% for header in dispensers_table_data['table_headers'] %}
+                        <th id="dispenser-table-header">{{ header }}</th>
+                    {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in dispensers_table_data['rows'] %}
+                        <tr>
+                            <td class="dispenser_row">
+                                <a class="link-undecorated" href="{{ row['pepe_url'] }}"><img
+                                        class="dispenser-image mb-3 rounded" src="{{ row['pepe_image_url'] }}"
+                                        height="85"
+                                        alt=""></a><br/>
+                                <a id="address_truncated" class="link-undecorated"
+                                   href="{{ row['pepe_url'] }}">{{ row['address_truncated'] }}</a>
+                            </td>
+                            <td class="dispenser_row"><a class="link-undecorated"
+                                                         href="{{ row['pepe_url'] }}">{{ row['stock'] }}</a></td>
+                            {% if fiat_enabled %}
+                                <td class="dispenser_row"><a class="link-undecorated"
+                                                             href="{{ row['pepe_url'] }}">{{ row['usd_value'] }}</a>
+                                </td>
+                            {% endif %}
+                            <td class="dispenser_row"><a class="link-undecorated"
+                                                         href="{{ row['pepe_url'] }}">{{ row['pay'] }}</a></td>
+                            <td class="dispenser_row"><a class="link-undecorated"
+                                                         href="{{ row['pepe_url'] }}">{{ row['receive'] }}</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+
+{# CARD LIST SECTION #}
+{% macro show_pepe_listing(collection_view_data, query_text) %}
+    <!-- Card listing section -->
+    <div id="card-list-section-base" class="container-fluid pb-4">
+        <div id="card-list-subsection" class="container">
+            <h5 id="card-list-heading" class="p-2">{{ collection_view_data['display_title'] }}</h5>
+            <div id="card-list-row" class="row">
+                {% for card in collection_view_data['cards'] %}
+                    <div class="col p-3">
+                        <div class="text-center" id="card_pepe_name"><span
+                                class="font-weight-bold">{{ card['pepe_name'] }}</span></div>
+                        <div class="text-center" id="card-image">
+                            <a href="{{ card['pepe_url'] }}"><img class="card-image rounded"
+                                                                  src="{{ card['pepe_image_url'] }}" height="210"
+                                                                  alt=""></a>
+                        </div>
+                        <div class="sub-data text-center">
+                            {% if 'line_1' in card %}
+                                <span id="card-line-1">{{ card['line_1'] }}</span>
+                            {% endif %}
+                            {% if 'line_2' in card %}
+                                <span id="card-line-2"> | {{ card['line_2'] }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% if collection_view_data['is_paginated'] %}
+        {% for i in range(collection_view_data['total_pages']) %}
+            {% if collection_view_data['list_type'] == 'search' %}
+                <form action="{{ collection_view_data['page_url_base'] }}" method="post">
+                    <input name="search_text" value="{{ query_text }}" type="hidden"/>
+                    <input name="page_number" value="{{ loop.index }}" type="hidden"/>
+                    <button style="display:inline" type='submit'>{{ loop.index }}</button>
+                </form>
+            {% else %}
+                <a href="{{ collection_view_data['page_url_base'] }}/{{ collection_view_data['search_text'] }}/{{ loop.index }}">{{ loop.index }}</a>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- DEBUGGING
+<p>collection_view_data: {{collection_view_data}}</p>-->
+
+{% endmacro %}
+
+{# ORDER LISTING #}
+{% macro show_pepe_orders(orders_view_data) %}
+    <!-- Order list section -->
+    <div id="order-list-section" class="container-fluid">
+        <div id="order-list-section-subdiv" class="container">
+            <div id="order-list-tables-div">
+                <!-- <h2 id="order-list-tables-heading">{{orders_view_data['display_title']}}</h2> -->
+                <br>
+                <div class="row">
+                    {% for order_side in ['sell','buy'] %}
+                        <div class="col">
+                            <table class="order-table">
+                                <tr>
+                                    <th colspan="3">{{ orders_view_data[order_side]['header'] }}</th>
+                                </tr>
+                                <tr>
+                                    {% for heading in orders_view_data['table_headers'] %}
+                                        {% if heading == orders_view_data['base_asset_header'] %}
+                                            <th><a href="{{ orders_view_data['base_asset_url'] }}"><img
+                                                    src="{{ orders_view_data['base_asset_image_url'] }}" alt=""
+                                                    height="30"></a> {{ heading }}</th>
+                                        {% elif heading == orders_view_data['pepe_asset_header'] %}
+                                            <th><img src="{{ orders_view_data['pepe_image_url'] }}" alt=""
+                                                     height="30"> {{ heading }}</th>
+                                        {% elif heading == 'BTC' %}
+                                            <th><img src="{{ orders_view_data['btc_image_url'] }}" alt=""
+                                                     height="30"> {{ heading }}</th>
+                                        {% else %}
+                                            <th>{{ heading }}</th>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% for row in orders_view_data[order_side]['orders'] %}
+                                    <tr>
+                                        {% if fiat_enabled %}
+                                            <td>
+                                                <a class='link-undecorated'
+                                                   href="{{ row['base_asset_url'] }}">{{ row['usd_value'] }}</a>
+                                            </td>
+                                        {% endif %}
+                                        <td>
+                                            <a class='link-undecorated'
+                                               href="{{ row['base_asset_url'] }}">{{ row['pepe_price_btc'] }}</a>
+                                        </td>
+                                        <td>
+                                            <a class='link-undecorated'
+                                               href="{{ row['xchain_tx_url'] }}">{{ row['pepe_price'] }}</a>
+                                        </td>
+                                        <td>
+                                            <a class='link-undecorated' href="{{ row['xchain_tx_url'] }}">
+                                                {{ row['pepe_amount'] }}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+

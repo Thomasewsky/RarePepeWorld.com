@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %} - Advertise{% endblock %}
+{% from 'macros.html' import show_dispensers_table %}
+
+{% block btcpayserver_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/autocomplete_btcpayserver.css' ) }}"/>
+{% endblock %}
+{% block btcpayserver_js %}
+    <script>const pepe_names = {{ pepe_names_list_str | safe }};</script>
+    <script src="{{ url_for('static', filename='js/autocomplete_btcpayserver.js') }}"></script>
+{% endblock %}
+
+{% block ad_page_on_load %}onunload=""{% endblock %}
+
+{% block content %}
+    <div id="pepe-details-main" class="container">
+        <div id="pepe-details-main-row" class="row">
+            <div id="pepe-image-column" class="col-md-6 p-5">
+                <div class="row">
+                    <img class="pepe-image image-fluid rounded" src="{{ ad_image_url }}" width="60%" height="auto"
+                         alt="">
+                </div>
+            </div>
+            <div id="pepe-info-column" class="col-md-6 p-5">
+                <div id="pepe-info-section-ad" class="col justify-content-center">
+                    <h2 class="text-center">{{ ad_pepe_name }}</h2>
+                    <p class="text-left">Hello! Feature your Pepe on the front page of Rare Pepe World for 5 whole
+                        days!</p>
+                    <p class="text-left">Advertising spots are available on a first-come, first-serve basis. Only
+                        ${{ ad_price }}
+                        USD equivalent, paid in bitcoin.
+                        <img src="{{ url_for('static', filename='images/frog.png') }}" width="32"></p>
+                    <h4 class="m-2">Next available featured spot</h4>
+                    <div>Saturday, October 16th, 2021</div>
+
+                    <div id="invalid_pepe"></div>
+
+                    <div id="btcpay-button-section" class="m-2">
+                        <form id='btcpay-form' method="POST"
+                              class="btcpay-form btcpay-form-block"
+                              action='{{ action_url }}'
+                              onsubmit="return verify_pepe(get_typed_pepe(), pepe_names)"
+                              method="post">
+                            <input type="hidden" id="refresh" value="no">
+{#                            <input type="hidden" name="checkoutQueryString" value="{{ title_alt }}"/><br/>#}
+                            <input name="choosen_pepe" id="pepe-input-text-box" class="form-control-sm" value="{{ typed_pepe }}">
+                            <input type="image" class="submit" name="submit" src="{{ pay_button_image }}"
+                                   style="width:146px" alt="Pay with BtcPay, Self-Hosted Bitcoin Payment Processor">
+                            <div id="invalid_pepe"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ payment_data }}
+{% endblock %}

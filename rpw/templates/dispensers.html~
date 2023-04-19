@@ -1,0 +1,13 @@
+{% macro show_dispensers(dispenser_data) %}
+
+{% for dispenser in dispenser_data.dispensers %}
+<tr>
+{ % for key in dispenser.headers %}
+<td>{{ dispenser[key] }}</td>
+{ % endfor % }
+<i class="fa fa-check" aria-hidden="true"></i>
+</td>
+</tr>
+{% endfor %}
+
+{% endmacro %}

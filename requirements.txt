@@ -1,0 +1,13 @@
+btcpay
+Flask
+qrcode[pil]
+django-qrcode
+html5lib
+requests
+mysql-connector-python
+beautifulsoup4
+setuptools
+pycoingecko
+btcpay-python
+lxml
+Werkzeug

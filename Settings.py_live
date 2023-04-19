@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+
+import logging
+import os
+from pathlib import Path
+
+Main = {
+    'base_path': os.environ.get('RPW_SCRIPT_BASE'),
+    'log_path': os.environ.get('RPW_LOG_PATH'),
+    'log_level': os.environ.get('RPW_LOG_LEVEL'),
+    'log_formatter': logging.Formatter('%(asctime)s %(levelname)-8s %(message)s'),
+    'faq_file': os.environ.get('RPW_SCRIPT_BASE') + '/rpw/static/data/faq.xml'
+}
+
+Site = {
+    'title': "RARE PEPE WORLD",
+    'title_alt': 'RarePepeWorld.com',
+    'subtitle': "Trading frogs for Bitcoin since 2016",
+    'domain': "https://rarepepeworld.com",
+    'email': 'rarepepeworld@pm.me',
+    'google_analytics' : True
+}
+
+Sources = {
+    'rpc': {
+        'url': 'http://localhost:4000/api/',
+        'user': 'rpc',
+        'password': 'rpc',
+        'version': "2.0",
+        'headers': {'content-type': 'application/json'}
+    },
+    'mysql': {
+        'host': 'localhost',
+        'user': 'cp',
+        'password': 'tGi2gJjEdvMzoe',
+        'database_name': 'CounterpartyPepes',
+    },
+    'xchain': {
+        'api_base_url': "https://xchain.io/api",
+        'methods_available': ["address", "asset", "balances", "bets", "block", "broadcasts", "burns", "credits",
+                              "debits",
+                              "destructions", "dispensers", "dispenses", "dividends", "history", "holders", "issuances",
+                              "market", "markets", "mempool", "network", "order_matches", "orders", "sends", "send_tx",
+                              "tx", "utxos"]
+    },
+    'btcpayserver': {
+        'client_store_file': f"{Main['base_path']}/rpw/static/data/btc_pay_client",
+        'secret': '2rNbyv7Aezgyf7oUmphQiEN4wTZJ',
+        'pay_url': 'https://pay.rarepepeworld.com'
+    },
+    'pepe_data': {
+        'list_url': "https://rarepepewallet.com/feed",
+        'list_file': f"{Main['base_path']}/rpw/static/data/pepe-list.txt",
+        'images_path': f"{Main['base_path']}/rpw/static/pepe_images/",
+        'rarepepedirectory_urls': f"{Main['base_path']}/rpw/static/data/RarePepeDirectory_Links.json",
+        'pepe_series_file': f"{Main['base_path']}/rpw/static/data/RarePepeDirectory_Series_Data.json",
+        'addresses': f"{Main['base_path']}/rpw/static/data/addresses.txt",
+        'qr_codes': f"{Main['base_path']}/rpw/static/qr",
+        'artists': f"{Main['base_path']}/rpw/static/data/pepe-artists.txt",
+        'burn_addresses': f"{Main['base_path']}/rpw/static/data/burn_addresses.txt",
+        'db_state_file': f"{Main['base_path']}/rpw/static/data/db_latest_block"
+    }
+}
+
+Ads = {
+    'default_ads': {
+        '_RANDOM_': (0, '_RANDOM_', 0, "__default__"),
+        'PUMPURPEPE': (0, '_RANDOM_', 0, "__default__"),
+        'PEPETRADERS': (0, 'PEPETRADERS', 0, "__default__")
+    },
+    'block_count': 720,
+    'currency': 'USD',
+    'price': '0.50',
+    "notificationUrl": 'http://rarepepeworld.com:55000/B28vk',
+    "redirectURL": "http://rarepepeworld.com:55000/"
+}
+
+Logs = {
+    'base_path': Main['log_path'],
+    'formatter': Main['log_formatter'],
+    'log_level': 'INFO',
+    'loggers': {
+        'defaults': {
+            'log_level': 'DEBUG',
+            'log_file': Path(Main['log_path']) / 'run.log',
+            'log_formatter': Main['log_formatter']
+        },
+        'root': {
+            'log_level': 'DEBUG',
+            'log_file': Path(Main['log_path']) / 'root.log',
+            'log_formatter': Main['log_formatter']
+        },
+        'data': {
+            'log_level': 'DEBUG',
+            'log_file': Path(Main['log_path']) / 'data.log',
+            'log_formatter': Main['log_formatter']
+        },
+        'data_queries': {
+            'log_level': 'DEBUG',
+            'log_file': Path(Main['log_path']) / 'data_queries.log',
+            'log_formatter': Main['log_formatter']
+        },
+        'errors': {
+            'log_level': 'DEBUG',
+            'log_file': Path(Main['log_path']) / 'errors.log',
+            'log_formatter': Main['log_formatter']
+        },
+        'db_updater': {
+            'log_level': 'DEBUG',
+            'log_file': Path(Main['log_path']) / 'db_populator.log',
+            'log_formatter': Main['log_formatter']
+        },
+        'ad_sequencer': {
+            'log_level': 'DEBUG',
+            'log_file': Path(Main['log_path']) / 'ad_sequencer.log',
+            'log_formatter': Main['log_formatter']
+        },
+        'purchases': {
+            'log_level': 'INFO',
+            'log_file': Path(Main['log_path']) / 'purchases.log',
+            'log_formatter': Main['log_formatter']
+        }
+    }
+}
+

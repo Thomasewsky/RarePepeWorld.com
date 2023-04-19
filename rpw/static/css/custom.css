@@ -1,0 +1,255 @@
+body {
+    text-align: center;
+    background-color: #B2E6FB;
+    /*font-family: Impact,Haettenschweiler,Franklin Gothic Bold,Charcoal,Helvetica Inserat,Bitstream Vera Sans Bold,Arial Black,sans serif;*/
+}
+
+#main-title {
+    text-decoration: none;
+    color: black;
+}
+
+.undecorated {
+    text-decoration: none;
+    color: black;
+}
+
+.link-undecorated {
+    text-decoration: none;
+    color: black;
+}
+
+#featured-section-base, #pepe-details-section-base {
+    background-color: #B2E6FB;
+}
+
+#dispensers-section, #order-list-section {
+    background-color: #F6F6F4;
+    min-width: 550px;
+    min-height: 400px;
+}
+
+#pepe-info-section {
+    background-color: #F6F6F4;
+    border: thin solid black;
+    border-top-color: transparent;
+    min-width: 475px;
+}
+
+#pepe-info-section-ad {
+    background-color: #F6F6F4;
+    border: thin solid black;
+    min-width: 475px;
+}
+
+.pepe-image {
+    border-radius: 25px;
+    min-width: 350px;
+    max-width: 350px;
+    /* padding-left: 20px; */
+}
+
+.pepe-image-desktop {
+    padding-left: 50px;
+}
+
+.pepe-details-head {
+    text-align: left;
+}
+
+.pepe-details-data {
+    text-align: left;
+}
+
+#pepe-details-main {
+    min-width: 550px;
+}
+
+#pepe-input-text-box {
+    color: #918A8A;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+}
+
+#main-header {
+    background-color: #7FCE65;
+    min-width: 550px;
+}
+
+#footer {
+    background-color: #7FCE65;
+    min-width: 550px;
+}
+
+#copyright {
+    margin-bottom: .5rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+#section-search {
+    width: 40%;
+}
+
+#search-input {
+    background-color: #F6F6F4;
+    font-weight: bold;
+}
+
+#section-search-form {
+    /*width: 250px;
+    width:120%;*/
+}
+
+.sub-data {
+    font-size: 0.75rem;
+}
+
+#btc_price_clipboard {
+    border: none
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/*
+Generic Styling, for Desktops/Laptops
+*/
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Zebra striping */
+tr:nth-of-type(odd) {
+    background: #eee;
+}
+
+th {
+    background: #000000;
+    color: white;
+    font-weight: bold;
+}
+
+td, th {
+    padding: 6px;
+    border: 1px solid #ccc;
+    /* text-align: left;  */
+}
+
+
+/* Smartphones (portrait and landscape) ----------- */
+
+#address_truncated {
+    font-size: 0.8rem;
+}
+
+#topTabs li a, #bottomTabs li a {
+    background-color: #ccc;
+    border: thin solid black;
+    color: black;
+}
+
+#topTabs li a.active, #bottomTabs li a.active {
+    border-bottom-color: transparent;
+    background-color: #F6F6F4;
+}
+
+.tab-pane {
+    /*min-height: 400px;*/
+}
+
+/*
+  Max width before this PARTICULAR table gets nasty
+  This query will take effect for any screen smaller than 760px
+  and also iPads specifically.
+  */
+@media only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px) {
+    .pepe-image {
+        border-radius: 30px;
+        min-width: 450px;
+        margin-left: 20px;
+        /* padding-left: 10px; */
+    }
+
+    .pepe-image-desktop {
+        padding-left: 0px;
+    }
+
+}
+
+.order-price {
+    display: inline;
+}
+
+/** autocomplete ad-page items **/
+.autocomplete {
+    /*the container must be positioned relative:*/
+    position: relative;
+    display: inline-block;
+}
+
+input {
+    border: 1px solid transparent;
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size: 16px;
+}
+
+input[type=text] {
+    background-color: #f1f1f1;
+    width: 100%;
+}
+
+input[type=submit] {
+    background-color: DodgerBlue;
+    color: #fff;
+}
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    top: 100%;
+    left: 0;
+    right: 0;
+}
+
+.autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #d4d4d4;
+}
+
+.autocomplete-items div:hover {
+    /*when hovering an item:*/
+    background-color: #e9e9e9;
+}
+
+.autocomplete-active {
+    /*when navigating through the items using the arrow keys:*/
+    background-color: DodgerBlue !important;
+    color: #ffffff;
+}
+
+#xcp-warning {
+    font-size: 0.9em
+}
+
+#xcp-warning a {
+    color: #8CB8CE;
+}
+
+#dispensers-heading {
+    color: #A5A5A5;
+}
+
+

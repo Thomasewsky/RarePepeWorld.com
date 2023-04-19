@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questions>
+    <faq-item>
+        <question>
+            <div>What are Rare Pepes and why should I care?</div>
+        </question>
+
+        <answer>
+            <p>Great question! In short, Rare Pepes are the first user generated NFTs. They were created on top of
+                Bitcoin in the 2016 - 2017 period, using the <a href="http://counterparty.io/">Counterparty protocol</a>.
+            </p>
+            <p>To learn more about their history, check out this <a
+                    href="https://app.pitch.com/app/public/player/d6eb5ef4-1084-418f-8760-1595dbaeea99">awesome
+                presentation someone made</a>.
+            </p>
+        </answer>
+    </faq-item>
+
+    <faq-item>
+        <question>
+            <div>What the heck is a dispenser?</div>
+        </question>
+
+        <answer>
+            <p>Dispensers are a magical Bitcoin smart contract that functions like a vending machine.</p>
+            <p>The dispensers ask for a specific amount of BTC for each pepe they can dispense. If you send the amount
+                asked for, it will dispense the pepe back to the address you sent from.
+            </p>
+            <p>You heard that right, the dispenser will send the pepe back to the address you sent the BTC from. This
+                means that to receive your pepe you want to use a wallet that can see and access the pepe. Such as <a
+                        href="http://RAREPEPEWALLET.com">RAREPEPEWALLET.com
+                </a> or <a href="http://Freewallet.io">Freewallet.io</a>. Also known as a Counterparty enabled wallet.
+            </p>
+            <p>In cases where the vending machine has multiple units of a pepe, like PEPECASH, you can send the
+                cumulative equivalent of the amount of PEPECASH you want.
+            </p>
+            <p>For example, if the PEPECASH is priced at 100 SATS, and you want two of them, you can send 200 SATS and
+                you will get 2 PEPECASH. That is, of course. If the dispenser has 2 PEPECASH available. If you send more
+                Bitcoin to a dispenser then it has available stock for, you will have to try and find the owner, not a
+                trivial task. Kinda like trying to find the manager if a vending machine won't spit out your drink!
+            </p>
+            <p>In such cases you can go and try to find the owner of the dispenser on the <a
+                    href="https://t.me/joinchat/QJdrG2ehHAfk5lKw">Rare Pepe telegram group
+            </a> or ask for help there.
+            </p>
+            <p>It's also possible that someone sent BTC to a dispenser right before you do, and they get the dispenser
+                first, emptying the stock available.
+            </p>
+            <p>To protect users from this problem, we link directly to Xchain, a more detailed block explorer that will
+                warn you if the stock has been emptied. It also shows unconfirmed transactions that are incoming trying
+                to take a part of the stock of that dispenser. <a
+                        href="https://xchain.io/tx/ad9d5348b45f864cfbc4a9286e73f6a87101c4fb42ce5b86829c14c394f36469">
+                    Here’s an example of an active dispenser.
+                </a>
+            </p>
+            <p>We only display dispensers that are open at the time the page is loaded.</p>
+        </answer>
+    </faq-item>
+
+    <faq-item>
+        <question>
+            <div>Only send from XCP enabled Bitcoin wallets.</div>
+        </question>
+
+        <answer>
+            <p>Rare pepes live on a Bitcoin sidechain called Counterparty (XCP). As such, pepes can live on any Bitcoin
+                address, but only wallets that support the XCP protocol can show them to you and let you send them to
+                other people or access their bonus content.
+            </p>
+            <p>When you send BTC to a dispenser, the dispenser automagically sends back the equivalent amount of pepes
+                back to the address you sent to. If you send the BTC from an exchange or a non XCP enabled wallet then
+                the pepe might be stuck there and it might not be easy to get it back.
+            </p>
+            <p>So, only use <a href="http://RAREPEPEWALLET.com">RAREPEPEWALLET.com</a> or <a
+                    href="http://Freewallet.io">Freewallet.io
+            </a> when you send BTC to Bitcoin dispensers. We do not recommend any other wallets.
+            </p>
+        </answer>
+    </faq-item>
+
+    <faq-item>
+        <question>
+            <div>How do I create a dispenser?</div>
+        </question>
+
+        <answer>
+            <p>The best and recommended way to do it is with <a href="http://freewallet.io">Freewallet.io</a>’s Desktop
+                version. You will need to have at least 0.5 XCP on the wallet and some BTC to pay for the transaction
+                fees, as it all happens on top of Bitcoin rails.
+            </p>
+            <p>When you create a dispenser you are sending your Pepes to a distributed Counterparty escrow, a kind of
+                smart contract. You are also giving it a receive address that should be different than the address you
+                are sending the Pepe from. It is important that this address be new and not used regularly as any
+                transactions that enter it could trigger the dispensers and send out Pepes.
+            </p>
+            <p>When you create a dispenser you choose how many units of a Pepe you want to dispenser and how much BTC
+                has to be received per asset. You can buy multiples of an asset if the dispenser has stock available and
+                if you send the equivalent amount of Bitcoin.
+            </p>
+            <p>The Dispenser looks at the receiving address and if it observers a BTC deposit to the receiving address
+                then it dispenses a PEPE to the address that sent the Bitcoin automagically. This transfer does not take
+                an extra Bitcoin transaction, it is settled on the Counterparty L2.
+            </p>
+            <p>Please note that Dispensers can not send money to Bitcoin addresses that start with a 3, only addresses
+                that start with a 1 or a b. Aka Legacy or Segwit addresses, no p2sh or scripts.
+            </p>
+            <p>Also note that to cancel a dispenser you need to have the private key of the receiving address loaded up
+                into a Counterparty compatible wallet.
+            </p>
+            <p>Last but not least, it is possible to put multiple dispensers on one address, but this is not recommended
+                as it is off standard behaviour that might cause confusion for buyers and sellers. It is advised that
+                every dispenser have a fresh Bitcoin address that is not reused or used for anything else.
+            </p>
+        </answer>
+    </faq-item>
+
+    <faq-item>
+        <question>
+            <div>What is the XCP / PEPECASH DEX?</div>
+        </question>
+
+        <answer>
+            <p>XCP and PEPECASH are currency-like assets on top of the counterparty protocol. Counterparty is a side
+                chain protocol on top of Bitcoin. This protocol supports a form of on-chain decentralized exchange that
+                is trust minimized in nature. This means that there is no counter party, no custody risk, no third party
+                middleman. You can trade your pepes with buyers directly.
+            </p>
+            <p>Sadly, because Counterparty is a kind of layer two protocol, it can not integrate Bitcoin directly into
+                this DEX scheme. So only XCP and PEPECASH are really supported in this DEX format. However, Bitcoin
+                dispensers are a functional alternative if you want to buy your Pepes with BTC which is much more liquid
+                and easy to acquire than XCP or PEPECASH.
+            </p>
+            <p>One of the major benefits of the DEX is that you can place buy limit orders for a specific Pepe, and
+                those orders will be visible to the market, letting you know where the active floor for a pepe might be.
+                This is something currently not possible with Bitcoin dispensers.
+            </p>
+            <p>There are two recommended ways to access the Counterparty DEX. <a href="http://pepewallet.com/#">
+                Rarepepewallet.com
+            </a> (easier, less advanced features) and <a href="https://freewallet.io/">Freewallet.io</a> for Desktop
+                (advanced features, harder to use).
+            </p>
+            <p>The easiest way to get PEPECASH or XCP is to buy them from dispensers with Bitcoin. Though you can also
+                try to get them from an exchange.
+            </p>
+        </answer>
+    </faq-item>
+
+    <faq-item>
+        <question>
+            <div>What does the “⚡” price mean?</div>
+        </question>
+
+        <answer>
+            <p>Rare Pepe World uses Bitcoin as the primary currency for pepes. This means that pepes costing tens of
+                thousands of dollars or 0.50 cents worth of BTC all get denominated in Bitcoin.
+            </p>
+            <p>The problem of course, is the gigantic numbers! Look for example at GIVEKUDOS. It is worth (at the time of writing), more or less,
+                0.50 cents worth of BTC. Which comes out to 0.00000750 BTC, or 750 Satoshis.
+            </p>
+            <p>Which one is prettier in this example? Well, of course, 750 Satoshis.</p>
+            <p>In a case where the price of a pepe is above 1 million Satoshis, such as LordKeke which is a whopping
+                2100 BTC(!), we would have to show it as 210,000,000,000 Satoshis! That doesn't make sense. So we show it
+                as 2100 BTC instead!
+            </p>
+            <p>Does that make sense? Kind of how "Dollars" and "Cents" work. BTC and Satoshis are two ways of looking at
+                the same monetary amount.
+            </p>
+        </answer>
+    </faq-item>
+
+    <faq-item>
+        <question>
+            <div>Does this harm Bitcoin scaling?</div>
+        </question>
+
+        <answer>
+            <p>The Counterparty protocol has been around for a while and concerns about scaling have been with us as
+                much as any other Bitcoin project. In fact, the fee prices post 2017 were a reason why the protocol kind
+                of lost prominence. However, they continued to develop with scalability in mind.
+            </p>
+            <p>One of the key things about Counterparty transactions that has a big impact is that XCP assets are
+                essentially transferred at a layer two protocol managed by counterparty, which stores some of the
+                relevant bdata on the op-return area of Bitcoin transactions. This means that one transaction on the
+                Bitcoin on chain layer can trigger multiple transfers on the XCP layer. This is particularly true with
+                BTC denominated dispensers.
+            </p>
+            <p>Counterparty also has a protocol to send assets at scale, so that if you want to move a lot of NFTs for
+                example from one address to another, this can be done more efficiently.
+            </p>
+            <p>Last but not least, there might be ways to move Counterparty assets to the Liquid Network if demand for
+                such a thing arises. Currently many pepes cost hundreds of dollars or more, matching the high value use
+                of Bitcoin as a settlement layer. If this gets priced out by onchain fees, there are options to
+                potentially move assets to a higher layer, like Liquid. Currently however, fees are very affordable,
+                especially compared to Ethereum or past eras of Bitcoin.
+            </p>
+            <p>Counterparty also supports Bech32 transactions and is positioned to benefit from the ongoing scalability
+                developments made by Bitcoin core.
+            </p>
+        </answer>
+    </faq-item>
+
+    <faq-item>
+        <question>
+            <div>How is real supply calculated?</div>
+        </question>
+
+        <answer>
+            <p>The "Real Supply" shown throughout rare pepe world is a custom calculation we do in order to more
+                accurately reflect the supply of pepes in the market.
+            </p>
+            <p>Where we differ from most other services in the space is that we take obvious burn addresses into account
+                when counting the pepe supply and subtract assets on those addresses from the total supply.
+            </p>
+            <p>We also include asset destructions on top of the XCP protocol, unlike some sites.</p>
+            <p>If you have created a new burn address and would like us to add it to our list to reflect updated
+                balances, please email it to us at rarepepeworld@pm.me.
+            </p>
+            <p>Cheers!</p>
+        </answer>
+    </faq-item>
+</questions>

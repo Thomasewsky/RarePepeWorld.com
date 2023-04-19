@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %} - FAQ{% endblock %}
+
+{% block content %}
+    <h2 id="faq-heading">FAQ RARE PEPE WORLD</h2>
+    <div class="container center-block text-left w-50">
+        <div class="accordion" id="faq-section">
+            {% for faq_item in faq_items %}
+            <div class="card">
+                <div class="card-header" id="faq-q{{ loop.index }}">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#faq-a{{ loop.index }}"
+                                aria-expanded="true" aria-controls="faq-a{{ loop.index }}">{{ faq_item['question'] | safe}}
+                        </button>
+                    </h5>
+                </div>
+                <div id="faq-a{{ loop.index }}" class="collapse hide" aria-labelledby="faq-q{{ loop.index }}"
+                     data-parent="#faq-section">
+                    <div class="card-body">
+                        {{ faq_item['answer']  | safe }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% from 'macros.html' import show_latest_dispensers_table, show_featured_pepes, show_pepe_listing %}
+
+{% block content %}
+
+{{show_featured_pepes(featured_pepes_view_data)}}
+{% if show_latest_dispensers %}
+    {{show_latest_dispensers_table(display_data)}}
+{% else %}
+    {{show_pepe_listing(display_data, "Random Pepes")}}
+{% endif %}
+
+{% endblock %}

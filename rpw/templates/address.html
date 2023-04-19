@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %} - {{address}}{% endblock %}
+{% from 'macros.html' import show_pepe_listing %}
+
+{% block content %}
+
+{{show_pepe_listing(collections_list_data)}}
+
+{% endblock %}

@@ -1,0 +1,7 @@
+#!/bin/bash
+. ./run/RarePepeWorld/.venv/bin/activate
+cd run/RarePepeWorld/
+export RPW_LOG_LEVEL="INFO" # one of 'DEBUG', 'INFO', 'WARNING', 'ERROR', or 'CRITICAL'
+export RPW_SCRIPT_BASE=$(pwd) # base path of run data
+export RPW_LOG_PATH="$(pwd)/logs/" # default log path
+gunicorn -b 127.0.0.1:8000 "rpw.app:create_app()"

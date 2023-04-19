@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import show_dispensers_table, show_pepe_orders %}
+
+{% block title %} - {{ pepe_name }}{% endblock %}
+{% block opengraph_image_url %}{{ opengraph_image_url }}{% endblock %}
+
+
+{% block content %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/btc_price_clipboard.js') }}"></script>
+    <script type="text/javascript">
+        function display(result) {
+            var resultDisplay = document.getElementById("result");
+            if (result) {
+                resultDisplay.classList.add("success");
+                resultDisplay.classList.remove("fail");
+                resultDisplay.innerText = "BTC Price Copied!";
+            } else {
+                resultDisplay.classList.add("fail");
+                resultDisplay.classList.remove("success");
+                resultDisplay.innerText = "Failed to copy text. Your browser may not support the necessary APIs.";
+            }
+        }
+
+        jQuery(function ($) {
+            'use strict';
+            (function () {
+                $('.image-link').magnificPopup({
+                    type: 'image',
+                    // mainClass: 'mfp-with-zoom', // this class is for CSS animation below
+                    zoom: {
+                        enabled: true, // By default it's false, so don't forget to enable it
+
+                        duration: 300, // duration of the effect, in milliseconds
+                        easing: 'ease-in-out', // CSS transition easing function
+
+                        // The "opener" function should return the element from which popup will be zoomed in
+                        // and to which popup will be scaled down
+                        // By defailt it looks for an image tag:
+                        opener: function (openerElement) {
+                            // openerElement is the element on which popup was initialized, in this case its <a> tag
+                            // you don't need to add "opener" option if this code matches your needs, it's defailt one.
+                            return openerElement.is('img') ? openerElement : openerElement.find('img');
+                        }
+                    },
+                    showCloseBtn: false
+                });
+            }());
+        });
+    </script>
+
+    <!-- Specific Pepe Section -->
+    <section id="meta">
+        <div id="pepe-details-main" class="container">
+            <div class="row">
+                <div class="col-md-6 p-5">
+                    <div class="row pepe-image-desktop">
+                        <a href="{{ pepe_image_url }}" target="_blank" class="image-link">
+                            <img class="pepe-image image-fluid" src="{{ pepe_image_url }}" width="60%" height="auto"
+                                 alt="">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 p-5">
+                    <div class="row">
+                        <ul class="nav nav-tabs" id="topTabs" role="tablist">
+                            <li class="nav-item" role="presentation"><a class="nav-link active" id="home-tab" role="tab"
+                                                                        data-toggle="tab" href="#home"
+                                                                        aria-controls="home"
+                                                                        aria-selected="true">Info</a></li>
+                            <li class="nav-item" role="presentation"><a class="nav-link" id="second-tab" role="tab"
+                                                                        data-toggle="tab" href="#second"
+                                                                        aria-controls="second" aria-selected="false">Holders</a>
+                            </li>
+                        </ul>
+                        <div id="pepe-info-section" class="col">
+                            <div class="tab-content" id="topTabsContent">
+                                <div id="home" class="tab-pane fade show active" role="tabpanel"
+                                     aria-labelledby="home-tab">
+                                    <br>
+                                    <h2 class="text-center">{{ pepe_name }}</h2>
+                                    <a href="{{ pepe_rarepepedirectory_url }}">
+                                        <img width=25 height=25
+                                             src="{{ url_for('static', filename='images/rarepepedirectory_link_emoji.png' ) }}"/>
+                                    </a>
+                                    <a href="{{ pepe_xchain_url }}">
+                                        <img height=20
+                                             src="{{ url_for('static', filename='images/xchain_logo.png' ) }}"/>
+                                    </a>
+                                    </h2>
+                                    <div class="row">
+                                        <div class="col pepe-details-head">Real Supply<a href="/faq"><sup>?</sup></a>:
+                                        </div>
+                                        <div class="col pepe-details-data">{{ pepe_holders['real_supply'] }}
+
+                                        </div>
+                                    </div>
+                                    {% if pepe_artist %}
+                                        <div class="row">
+                                            <div class="col pepe-details-head">Series:
+                                            </div>
+                                            <div class="col pepe-details-data">{{ series }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    {% if pepe_artist %}
+                                        <div class="row">
+                                            <div class="col pepe-details-head">Artist:
+                                            </div>
+                                            <div class="col pepe-details-data">
+                                                <a href="/artist/{{ pepe_artist }}/">{{ pepe_artist[:8] }}...</a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    {#                                    <div class="row">#}
+                                    {#                                        <div class="col pepe-details-head">Latest Price:</div>#}
+                                    {#                                        <div class="col pepe-details-data">{{ latest_price }}</div>#}
+                                    {#                                    </div>#}
+                                    <hr width="100%">
+{#                                    <h3 id="dispensers-heading" class="text-center">Dispensers</h3>#}
+{#                                    {% if dispenser_count == 0 %}#}
+{#                                        <div class="row m-2">#}
+{#                                            <br/>#}
+{#                                            <div class="col pepe-details-head text-center">No dispensers available</div>#}
+                                            {#                                            <img class="m-5" width="200"#}
+                                            {#                                                 src="{{ url_for('static', filename='qr/sad_pepe.jpg' ) }}" alt="">#}
+{#                                        </div>#}
+{#                                    {% else %}#}
+{#                                        <div class="row">#}
+{#                                            {% if dispenser_number != 0 %}#}
+{#                                                <div class="col pepe-details-head">Chosen Dispenser:</div>#}
+{#                                            {% else %}#}
+{#                                                <div class="col pepe-details-head">Cheapest Dispenser:</div>#}
+{#                                            {% endif %}#}
+{#                                            <div class="col pepe-details-data">{{ shown_dispenser_price }}#}
+{#                                                <input type="hidden" value="{{ shown_dispenser_price_btc }}"#}
+{#                                                       id="dispenser_price_btc"/>#}
+{#                                                <button id="btc_price_clipboard"#}
+{#                                                        onclick="display(simplecopy(document.getElementById('dispenser_price_btc').value))">#}
+{#                                                    <img width="18" height="18"#}
+{#                                                         src="{{ url_for('static', filename='images/clipboard.png') }}"/>#}
+{#                                                </button>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                        {% if fiat_enabled %}#}
+{#                                            <div class="row">#}
+{#                                                <div class="col pepe-details-head">Estimated USD Price</div>#}
+{#                                                <div class="col pepe-details-data">{{ shown_dispenser_usd_value }}</div>#}
+{#                                            </div>#}
+{#                                        {% endif %}#}
+{#                                        <div class="row">#}
+{#                                            <div class="col pepe-details-head">Receive:</div>#}
+{#                                            <div class="col pepe-details-data">{{ shown_dispenser_receive }}</div>#}
+{#                                        </div>#}
+{#                                        <div class="row">#}
+{#                                            <div class="col pepe-details-head">Stock:</div>#}
+{#                                            <div class="col pepe-details-data">{{ shown_dispenser_stock }}</div>#}
+{#                                        </div>#}
+{#                                        <div class="row">#}
+{#                                            <div class="col pepe-details-head"></div>#}
+{#                                            <div class="col pepe-details-data"><span id="result"></span></div>#}
+{#                                        </div>#}
+{#                                        <div class="row">#}
+{#                                            <div class="col pepe-details-head">Dispenser Address:</div>#}
+{#                                            <div class="col pepe-details-data">#}
+{#                                                <a href="{{ shown_dispenser_xchain_url }}">{{ shown_dispenser_address_truncated }}</a>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                        <div id="xcp-warning" class="row m-2">#}
+{#                                            <div class="col">#}
+{#                                            <p><a  href="/faq#faq-q2">(Send only from XCP enabled#}
+{#                                                wallets)</a></p>#}
+{#                                            </div>#}
+{#                                        </div>#}
+                                        {#                                        <div class="container-fluid">#}
+                                        {#                                            <img class="m-5" width="200" src="{{ shown_dispenser_qrcode }}" alt="">#}
+                                        {#                                            <p></p>#}
+                                        {##}
+                                        {#                                        </div>#}
+{#                                    {% endif %}#}
+                                </div>
+                                <div id="second" class="tab-pane fade" role="tabpanel" aria-labelledby="second-tab">
+                                    <br>
+                                    <div id="pepe_holders" class="row">
+                                        <div id="holders-section" class="col">
+                                            <h2 id="holders-heading">{{ pepe_name }}</h2>
+                                            <div id="holders-supply">Real Supply<a href="/faq"><sup>?</sup></a>: {{ pepe_holders['real_supply'] }}</div>
+                                            <div id="holders-table-div">
+                                                <table id="holders-table">
+                                                    <thead id="holders-table-headings">
+                                                    {% for heading in pepe_holders['table_headings'] %}
+                                                        <th class="holders-table-heading">{{ heading }}
+                                                    {% endfor %}
+                                                    </thead>
+                                                    <tbody id="holders-table-body">
+                                                    {% for row in pepe_holders['rows'] %}
+                                                        <tr>
+                                                            <td><a class="link-undecorated"
+                                                                   href="/{{ row['address'] }}">{{ row['address_truncated'] }}</a>
+                                                            </td>
+                                                            <td><a class="link-undecorated"
+                                                                   href="/{{ row['address'] }}">{{ row['quantity'] }}
+                                                                ({{ row['supply_percentage'] }}%)</a></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    {% if pepe_holders['remaining_holders_count'] > 0 %}
+                                                        <tr>
+                                                            <td>
+                                                                <a href="https://xchain.io/asset/{{ pepe_name }}">{{ pepe_holders['remaining_holders_count'] }}
+                                                                    more...
+                                                                    <i class="fa fa-external-link"
+                                                                       aria-hidden="true"></i></a></td>
+                                                            <td>{{ pepe_holders['remaining_quantity'] }}
+                                                                ({{ pepe_holders['remaining_percentage'] }}%)
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ul class="nav nav-tabs" id="bottomTabs" role="tablist">
+{#                <li class="nav-item" role="presentation"><a class="nav-link active" id="dispensers-tab" role="tab"#}
+{#                                                            data-toggle="tab" href="#dispensers" aria-controls="second"#}
+{#                                                            aria-selected="false">{{ pepe_dispensers['table_title'] }}</a>#}
+{#                </li>#}
+                {% if show_xcp_orders %}
+                    <li class="nav-item" role="presentation"><a class="nav-link" id="xcp-tab" role="tab"
+                                                                data-toggle="tab" href="#xcp" aria-controls="home"
+                                                                aria-selected="true">{{ pepe_xcp_orders['table_title'] }}</a>
+                    </li>
+                {% endif %}
+                {% if show_pepecash_orders %}
+                    <li class="nav-item" role="presentation"><a class="nav-link" id="pepecash-tab" role="tab"
+                                                                data-toggle="tab" href="#pepecash" aria-controls="home"
+                                                                aria-selected="true">{{ pepe_pepecash_orders['table_title'] }}</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="tab-content" id="topTabsContent">
+{#            <div id="dispensers" class="tab-pane fade show active" role="tabpanel" aria-labelledby="dispensers-tab">#}
+{#                {{ show_dispensers_table(pepe_dispensers) }}#}
+{#            </div>#}
+            {% if show_xcp_orders %}
+                <div id="xcp" class="tab-pane fade show active" role="tabpanel" aria-labelledby="xcp-tab">
+                    {{ show_pepe_orders(pepe_xcp_orders) }}
+                </div>
+            {% endif %}
+            {% if show_pepecash_orders %}
+                <div id="pepecash" class="tab-pane fade" role="tabpanel" aria-labelledby="pepecash-tab">
+                    {{ show_pepe_orders(pepe_pepecash_orders) }}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+{% endblock %}
