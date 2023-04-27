@@ -67,7 +67,7 @@ For quicker bootrapping of the site.
 `QueryTools.py` → Classes for managing data pertaining to various elements of the site: XChain site, Counterparty node,
 Pepe details from the database, price lookups, btcpayserver, etc
 
-`ViewsData.py` → Classes for prepping the data before it is passed to the Flask templates
+`PagesData.py` → Classes for prepping the data before it is passed to the Flask templates
 
 `DataConnectors.py` → Lower level data access to the information sources: Mysql database queries, Xchain queries,
 Counterparty rpc queries, btcpayserver queries
