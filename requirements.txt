@@ -2,6 +2,7 @@ btcpay
 Flask
 qrcode[pil]
 django-qrcode
+gunicorn
 html5lib
 requests
 mysql-connector-python
