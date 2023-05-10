@@ -22,7 +22,7 @@ possibly require multiple changes to the code and environmental settings. These 
 
 The following code paths/files are part of this repo:
 
-`RarePepeWorld/rpw/` → base path of python code
+`rpw/` → base path of python code
 
 `run.sh[suffix], Settings.py[suffix]` -> sample run and settings scripts
 
@@ -36,46 +36,48 @@ The following code paths/files are part of this repo:
 Ideally,  installed in the python virtual environment of the running server. See
 https://docs.python.org/3/tutorial/venv.html and below.
 
-`static/` → Various unchanging files for the running site
+`rpw/static/` → Various unchanging files for the running site
 
-`static/css` --> css style files
+`rpw/static/css` --> css style files
 
-`static/data` --> various saved data: burn addresses, faq questions list, etc
+`rpw/static/data` --> various saved data: burn addresses, faq questions list, etc
 
-`static/js` --> Javascript files
+`rpw/static/js` --> Javascript files
 
-`static/sql` → Mysql database related files
+`rpw/static/sql` → Mysql database related files
 
-`static/images`, `static/pepe_imagess`, `static/qr` → symbolic links to image files, pepe_images, qr. They 
+`rpw/static/images`, `static/pepe_imagess`, `static/qr` → symbolic links to image files, pepe_images, qr. They 
 were stored outside of repo, due to git provider storage limits and for sharing across run enviroments.
 
-`static/sql/CounterpartyPepes.sql` → base sql database setup
+`rpw/static/sql/CounterpartyPepes.sql` → base sql database setup
 
-`static/sql/CounterpartyPepes_Snapshot_[date].sql` -> snapshot of the sql data at a particular date. 
+`rpw/static/sql/CounterpartyPepes_Snapshot_[date].sql` -> snapshot of the sql data at a particular date. 
 For quicker bootrapping of the site.
 
-`templates/` → template files for determining the display of the website pages
+`rpw/templates/` → template files for determining the display of the website pages
+
+`rpw/Logging.py` → Classes for directing log messages to various files/outputs
+
+`rpw/QueryTools.py` → Classes for managing data pertaining to various elements of the site: XChain site, Counterparty node,
+Pepe details from the database, price lookups, btcpayserver, etc
+
+`rpw/PagesData.py` → Classes for prepping the data before it is passed to the Flask templates
+
+`rpw/DataConnectors.py` → Lower level data access to the information sources: Mysql database queries, Xchain queries,
+Counterparty rpc queries, btcpayserver queries
+
+`rpw/Utils.py` → some tools for miscellaneous requirements: json file processing, qr code creation, pagination of lists
+
+`rpw/app.py` → Flask entry point to the site. Determines how urls are rendered, triggers desired templates and components
+required to display pages.
+
+`sample_nginx_site.conf` -> Sample nginx configuration for a live site
 
 `tools/` → various scripts for completing necessary tasks, like updating the database
 
 `tools/db_updater.py` -> script for keeping the data of the site database updated
 
 `tools/price_updater.py` -> script for maintaining the current prices in the database
-
-`Logging.py` → Classes for directing log messages to various files/outputs
-
-`QueryTools.py` → Classes for managing data pertaining to various elements of the site: XChain site, Counterparty node,
-Pepe details from the database, price lookups, btcpayserver, etc
-
-`PagesData.py` → Classes for prepping the data before it is passed to the Flask templates
-
-`DataConnectors.py` → Lower level data access to the information sources: Mysql database queries, Xchain queries,
-Counterparty rpc queries, btcpayserver queries
-
-`Utils.py` → some tools for miscellaneous requirements: json file processing, qr code creation, pagination of lists
-
-`app.py` → Flask entry point to the site. Determines how urls are rendered, triggers desired templates and components
-required to display pages.
 
 ## Flask Templates
 
@@ -265,17 +267,22 @@ By default, those scripts will :
 * Sets the appriate environmental variables
 * launches the Flask server to the local network or via the ip address
 
-By default the site is accessed by navigating to http://localhost:55000.
+Via these scripts, the site is accessed by navigating to http://localhost:55000, or http://ip-address:55000.
 
 ### Running on a Domain Name
 
 To run via external domain, Nginx/Gunicorn can provide this functionality:
 
-* For description of this arrangment, see
+1. For description of this arrangment, see
   https://docs.gunicorn.org/en/stable/deploy.html,
   https://flask.palletsprojects.com/en/2.2.x/deploying/gunicorn/
 
-* The sample script for the live enviroment does the following:
+* A sample nginx config file is provided, which can be tweeked as needed.  Also, you will likely
+want to install a SSL certificate.  One option is to use a free certificate provided by
+[Let's Encrypt](https://letsencrypt.org/).  For Ubuntu, a good way to install it is via
+the package _certbot_. See https://snapcraft.io/install/certbot/ubuntu
+
+2. The sample script for the live enviroment does the following:
   * changes to the path where the live site files are stored. Say, ```/var/www/rpw/run/RarePepeWorld/```
   * Sets some variables
   * Launches Gunicorn via ``` gunicorn -b 127.0.0.1:8000 "rpw.app:create_app()"```
