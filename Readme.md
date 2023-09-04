@@ -197,7 +197,9 @@ Enter the mysql console using the sytem password, then the Mysql root password:
 
 In the console, run the following:
 
-> ``` mysql> GRANT ALL PRIVILEGES ON CounterpartyPepes TO 'username'@'localhost' # mysql> FLUSH PRIVILEGES;```
+> ``` mysql> GRANT ALL PRIVILEGES ON CounterpartyPepes TO 'username'@'localhost' ```
+
+> ``` mysql> FLUSH PRIVILEGES;```
 
 Replace *username* with the user defined in Settings.py.
 
@@ -245,6 +247,7 @@ Ensure the user that will run the site scripts has appropriate access to the fil
 *images* and *pepe_images*, and write permisions to *qr*:
 
 > ``` sudo chmod 755 /var/www/rpw/static/images/ /var/www/rpw/static/pepe_images/ /var/www/rpw/static/qr/```
+
 > ``` sudo chown -R username:username /var/www/rpw/static/qr/ ```
 
 Download here: [Site Images](https://mega.nz/file/I7pnmZza#dhQy6fSE0gYq76f4eCGNSB3hikzrpxQ2D5LhC73zejg), 
@@ -293,7 +296,7 @@ the package _certbot_. See https://snapcraft.io/install/certbot/ubuntu
 ### Persistence: Byobu/Tmux/Pm2
 
 * To keep the server running persistently and have it reload upon server reboot, some kind of service manager is 
-needed. There are various options: systemd, byobu, tmux, Pm2, etc.  Pm2 is a good choice.
+needed. There are various options: systemd, byobu, tmux, etc.  Pm2 is a good choice.
 * See https://byobu.org/, https://github.com/tmux/tmux, or https://pm2.io/.
 
 ## Resources
