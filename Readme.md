@@ -141,7 +141,9 @@ important will be to configure the database username and password.
 
 > ``` cp Settings.py_local Settings.py ```
 
-> ``` cp run.sh_local run.sh ``` 
+> ``` cp run.sh_local run.sh ```
+
+NOTE: **Remember to change the database connection details in the Settings.py file before any execution, as failure to do so may result in errors.**
 
 ### Database setup
 
@@ -173,6 +175,9 @@ Replace *cp* and *password* with the chosen values.
 Either,
 * Load the data from a snapshot.  A snapshots exists at rpw/static/sql/CounterpartyPepes_Snapshot_[date].sql for the particular 
 *date* for which the snapshot was created:
+> ``` sudo mysql -p ```
+> ``` mysql> CREATE DATABASE CounterpartyPepes;```
+> ``` mysql> EXIT; ```
 > ``` sudo mysql -p CounterpartyPepes < CounterpartyPepes_Snapshot_20230418.sql ```
 
 Enter the system user password, then the Mysql root password in the dialogs that follow.
@@ -197,7 +202,9 @@ Enter the mysql console using the sytem password, then the Mysql root password:
 
 In the console, run the following:
 
-> ``` mysql> GRANT ALL PRIVILEGES ON CounterpartyPepes TO 'username'@'localhost' ```
+> ``` mysql> USE CounterpartyPepes; ```
+
+> ``` mysql> GRANT ALL PRIVILEGES ON CounterpartyPepes TO 'username'@'localhost'; ```
 
 > ``` mysql> FLUSH PRIVILEGES;```
 
@@ -206,7 +213,6 @@ Replace *username* with the user defined in Settings.py.
 ### Keeping the data updated
 
 #### Prices
-
 > ``` cd tools/ ```
 > 
 > ``` python price_updater.py ```
