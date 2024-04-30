@@ -1,5 +1,5 @@
 btcpay
-Flask
+Flask=2.3.1
 qrcode[pil]
 django-qrcode
 gunicorn
