@@ -139,7 +139,7 @@ The repo provides various sample settings and run files for different contexts. 
 Settings.py[suffix] file scripts.  These set the values used by the site launch and within the site presentation. Most
 important will be to configure the database username and password.
 
-> ``` cp Settings.py_local Settings.py ```
+> ``` cp Settings.py_localhost Settings.py ```
 
 > ``` cp run.sh_local run.sh ``` 
 
@@ -173,6 +173,13 @@ Replace *cp* and *password* with the chosen values.
 Either,
 * Load the data from a snapshot.  A snapshots exists at rpw/static/sql/CounterpartyPepes_Snapshot_[date].sql for the particular 
 *date* for which the snapshot was created:
+
+> ``` sudo mysql -p ```
+
+> ``` CREATE DATABASE CounterpartyPepes; ```
+
+> ``` EXIT;```
+
 > ``` sudo mysql -p CounterpartyPepes < CounterpartyPepes_Snapshot_20230418.sql ```
 
 Enter the system user password, then the Mysql root password in the dialogs that follow.
@@ -180,6 +187,18 @@ Enter the system user password, then the Mysql root password in the dialogs that
 or,
 * if you do not have a snapshot, or wish to build the database from scratch, you can use the sql file
 provided, then run the db population scripts later:
+
+> ``` sudo mysql -p ```
+
+> ``` CREATE DATABASE CounterpartyPepes; ```
+
+> ``` USE CounterpartyPepes; ``` 
+
+> ``` GRANT ALL PRIVILEGES ON CounterpartyPepes TO 'cp'@'localhost' IDENTIFIED BY 'password'; ```
+
+> ``` FLUSH PRIVILEGES; ```
+
+> ``` EXIT;```
 
 > ``` mysql -u 'root' -p < CounterpartyPepes.sql ``` 
 
