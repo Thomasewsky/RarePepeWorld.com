@@ -318,11 +318,11 @@ Protocol specification: https://counterparty.io/docs/protocol_specification/
 
 API: https://counterparty.io/docs/api/
 
-### XChain
+### TokenScan
 
-Main site: https://www.xchain.io/
+Main site: https://tokenscan.io/
 
-API: https://www.xchain.io/api
+API: https://tokenscan.io/api
 
 ### Pepes
 
