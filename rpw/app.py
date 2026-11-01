@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import traceback
+from pathlib import Path
 from pprint import pformat
 
 from flask import Flask, jsonify
@@ -31,6 +32,18 @@ loggers = {
 
 # Flask app entry point
 def create_app():
+    @app.context_processor
+    def inject_original_brand_asset():
+        logo_path = Path(app.static_folder) / 'brand' / 'rarepepeworld-logo.png'
+        return {'rarepepeworld_logo_available': logo_path.is_file()}
+
+    @app.after_request
+    def prevent_homepage_cache(response):
+        if request.endpoint == 'index':
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+        return response
+
     @app.route('/')
     def index():
         """ Render template for root of website
@@ -114,6 +127,9 @@ def create_app():
             loggers['root'].info(f"Address or direct Pepe match. Redirect to /{search_text}")
             return redirect(f"/{search_text}")
         else:
+            results_data = render_data['search_results_data']
+            if page_number > max(1, results_data['total_pages']):
+                return redirect(f"/search/{search_text}/")
             loggers['root'].info(
                 f"No direct match. Rendering template 'search.html' with the search term {search_text}")
             return render_template('search.html',

@@ -1,5 +1,5 @@
 btcpay
-Flask
+Flask==2.2.5
 qrcode[pil]
 django-qrcode
 gunicorn
@@ -11,4 +11,4 @@ setuptools
 pycoingecko
 btcpay-python
 lxml
-Werkzeug
+Werkzeug==2.2.3

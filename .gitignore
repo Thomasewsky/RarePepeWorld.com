@@ -1,4 +1,6 @@
 venv/
+.venv/
+.env
 
 .idea
 *.pyc
@@ -19,3 +21,6 @@ run.log
 run.sh
 Settings.py
 rpw/static/data/db_latest_block
+
+# Persistent, verified original artwork cache and resumable audit state.
+rpw/static/artwork_cache/

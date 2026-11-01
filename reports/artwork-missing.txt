@@ -1,0 +1,2 @@
+Database assets missing artwork across checked sources (verified 404/invalid):
+XCP (extra_unmatched)

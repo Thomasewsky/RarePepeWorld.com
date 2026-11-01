@@ -1,14 +1,37 @@
 {% extends 'base.html' %}
-
-{% from 'macros.html' import show_latest_dispensers_table, show_featured_pepes, show_pepe_listing %}
-
+{% from 'macros.html' import show_featured_pepes %}
 {% block content %}
-
-{{show_featured_pepes(featured_pepes_view_data)}}
-{% if show_latest_dispensers %}
-    {{show_latest_dispensers_table(display_data)}}
-{% else %}
-    {{show_pepe_listing(display_data, "Random Pepes")}}
-{% endif %}
-
+{{ show_featured_pepes(featured_pepes_view_data) }}
+<section class="section-wrap archive-directory" id="archive" aria-labelledby="archive-heading">
+  <div class="archive-layout">
+    <div class="archive-intro">
+      <p class="archive-index-label">01 / ARCHIVE INDEX</p>
+      <h2 id="archive-heading">Explore the archive</h2>
+      <p>Browse the card catalogue, visit the series index and find RarePepeWorld information.</p>
+    </div>
+    <nav class="archive-links" aria-label="Archive links">
+      <a class="archive-link" href="/search/PEPE/">
+        <span class="archive-number">01</span><span class="archive-link-name">All Pepes</span><span class="archive-link-detail">Complete card catalogue</span><span class="archive-link-action">Browse</span>
+      </a>
+      <a class="archive-link" href="/faq/">
+        <span class="archive-number">02</span><span class="archive-link-name">FAQ</span><span class="archive-link-detail">RarePepeWorld information</span><span class="archive-link-action">Read</span>
+      </a>
+      <a class="archive-link" href="https://rarepepes.com/" target="_blank" rel="noopener">
+        <span class="archive-number">03</span><span class="archive-link-name">Series directory</span><span class="archive-link-detail">Rare Pepe cards by series</span><span class="archive-link-action">Visit</span>
+      </a>
+    </nav>
+  </div>
+</section>
+<section class="heritage-section" id="bitcoin-heritage">
+  <div class="heritage-heading"><p class="archive-index-label">02 / BITCOIN RECORDS</p><h2>Card artwork, beside its Counterparty asset record.</h2></div>
+  <div class="heritage-copy">
+    <p>Rare Pepes are digital cards issued as Counterparty assets on Bitcoin. Each asset has a Counterparty name and on-chain records for issuance, supply and holders. This archive pairs those records with the original card artwork.</p>
+    <dl class="record-index" aria-label="Counterparty asset record fields">
+      <div><dt>Asset</dt><dd>Counterparty identifier</dd></div>
+      <div><dt>Issuance</dt><dd>Creation recorded on Bitcoin</dd></div>
+      <div><dt>Holders</dt><dd>Addresses and quantities</dd></div>
+    </dl>
+    <p class="heritage-links"><a href="https://tokenscan.io/asset/RAREPEPE" target="_blank" rel="noopener">View a Counterparty asset record</a></p>
+  </div>
+</section>
 {% endblock %}

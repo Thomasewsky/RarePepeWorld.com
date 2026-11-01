@@ -215,7 +215,7 @@ class PepeData:
         latest_pepes = sorted(set([result['asset'] for result in db_results]))
         return random.choice(latest_pepes)
 
-    def get_featured_pepes(self) -> list:
+    def get_featured_pepes(self, include_random: bool = True) -> list:
         """
         Determine which pepes to show in the featured pepes section from the ad_slots database table.
         :return: list of pepe names to be placed in featured pepes list
@@ -230,8 +230,8 @@ class PepeData:
 
         for i, entry in enumerate(current_slots_entries):
             if entry == '_RANDOM_':
-                current_slots_entries[i] = self.featured_pepe_random()
-        return current_slots_entries
+                current_slots_entries[i] = self.featured_pepe_random() if include_random else None
+        return [entry for entry in current_slots_entries if entry]
 
     @staticmethod
     def load_pepe_names() -> List[str]:
@@ -268,6 +268,22 @@ class PepeData:
         query = 'SELECT asset FROM assets'
         results = self.db_connection.query_and_fetch(query)
         return [result['asset'] for result in results]
+
+    def get_collection_pepe_names(self, count: int = 6) -> List[str]:
+        """Return a stable sample of real collection assets for the homepage.
+
+        The ordering follows the stored series and then the Counterparty asset
+        identifier. This is intentionally deterministic; it is not a random
+        discovery feed and does not alter the underlying collection records.
+        """
+        count = max(0, min(int(count), 24))
+        if count == 0:
+            return []
+        query = "SELECT asset FROM assets " \
+                "WHERE asset <> 'XCP' AND asset <> 'PEPECASH' " \
+                f"ORDER BY series ASC, asset ASC LIMIT {count}"
+        data = self.db_connection.query_and_fetch(query)
+        return [row['asset'] for row in data or []]
 
     def get_pepe_image_file_names(self) -> dict:
         """ Generates the list pepe image file names from the database.
@@ -308,7 +324,9 @@ class PepeData:
         :param pepe_name: Pepe name to find the filename for
         :return: Name of the image filename corresponding to a particular pepe asset
         """
-        return self.pepe_images[pepe_name]
+        # Artwork lives outside the repository and may not be installed in a fresh clone.
+        # Keep archive records usable so templates can show their missing-artwork state.
+        return self.pepe_images.get(pepe_name, '')
 
     @staticmethod
     def load_image_file_names() -> dict:
@@ -317,9 +335,13 @@ class PepeData:
         """
         logging.info("Loading list of image files for Pepes.")
         image_path = Path(Settings.Sources['pepe_data']['images_path'])
-        pepe_image_file_paths = image_path.iterdir()
-        pepe_image_files = {pepe_image_file_path.name.split('.')[0]: pepe_image_file_path.name
-                            for pepe_image_file_path in pepe_image_file_paths}
+        if not image_path.is_dir():
+            logging.warning(f"Pepe artwork directory is unavailable: {image_path}")
+            pepe_image_files = {}
+        else:
+            pepe_image_file_paths = image_path.iterdir()
+            pepe_image_files = {pepe_image_file_path.name.split('.')[0]: pepe_image_file_path.name
+                                for pepe_image_file_path in pepe_image_file_paths if pepe_image_file_path.is_file()}
         logging.info("Done.")
         pepe_image_files['XCP'] = 'XCP.png'  # hard code non pepe asset XCP
         return pepe_image_files

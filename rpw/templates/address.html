@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
-{% block title %} - {{address}}{% endblock %}
 {% from 'macros.html' import show_pepe_listing %}
-
+{% block title %} — {{ address }}{% endblock %}
 {% block content %}
-
-{{show_pepe_listing(collections_list_data)}}
-
+<header class="address-intro"><p class="eyebrow">Address / Issuer archive</p><h1>{{ collections_list_data['display_title'] }}</h1></header>
+{{ show_pepe_listing(collections_list_data) }}
 {% endblock %}

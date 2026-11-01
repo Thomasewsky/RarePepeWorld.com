@@ -1,98 +1,181 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:fb="http://ogp.me/ns/fb#">
+<!doctype html>
+<html lang="en">
 <head>
-    <title>{{ title }}{% block title %}{% endblock %}</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.65">
-
-    <!-- OpenGraph image-->
-    <meta property="og:image" content="{% block opengraph_image_url %}{% endblock %}" />
-
-    {# Google Analytics #}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      html.rpw-transition-entering { background: #7FCE65 !important; }
+      html.rpw-transition-entering::before { content: ""; position: fixed; z-index: 2147483647; inset: 0; background: #7FCE65; pointer-events: all; }
+    </style>
+    <script>
+    (function () {
+      var key = 'rpw-card-mosaic-transition';
+      try {
+        var transition = JSON.parse(sessionStorage.getItem(key) || 'null');
+        var cleanPath = function (path) { return path.replace(/\/$/, '') || '/'; };
+        var currentPath = cleanPath(window.location.pathname);
+        var targetUrl = transition && new URL(transition.url, window.location.href);
+        var targetPath = targetUrl && cleanPath(targetUrl.pathname);
+        var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var animationSupported = window.Element && Element.prototype && typeof Element.prototype.animate === 'function';
+        var destinationMatches = targetUrl && (targetPath === currentPath ||
+          (transition.anyPath === true && targetUrl.origin === window.location.origin));
+        if (transition && Date.now() - transition.started < 10000 && destinationMatches &&
+            !reducedMotion && animationSupported) {
+          document.documentElement.classList.add('rpw-transition-entering');
+        }
+        sessionStorage.removeItem(key);
+      } catch (ignore) {}
+    })();
+    </script>
+    <title>{{ title }}{% block title %}{% endblock %}</title>
+    <meta name="description" content="Rare Pepe card artwork and Counterparty asset records on Bitcoin.">
+    <meta property="og:image" content="{% block opengraph_image_url %}{% endblock %}">
     {% if google_analytics %}
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XWBZ1YCEL6"></script>
     <script src="{{ url_for('static', filename='js/google_analytics.js') }}"></script>
     {% endif %}
-
-    {# CSS Libraries #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
-
-    {# CSS, Custom #}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/magnific-popup.css') }}">
     {% block btcpayserver_css %}{% endblock %}
-
-    {#  Script Libraries #}
-    {# JQuery #}
+    <script>
+    document.documentElement.classList.add('js');
+    function setArtworkState(event) {
+      var image = event.target;
+      if (!image || image.tagName !== 'IMG' || !image.hasAttribute('data-artwork')) return;
+      var fallback = image.nextElementSibling && image.nextElementSibling.classList.contains('artwork-fallback') ? image.nextElementSibling : null;
+      if (event.type === 'load') {
+        image.classList.add('artwork-loaded');
+        image.dataset.artworkStage = 'loaded';
+        var originalLink = image.closest('.detail-art-panel') && document.querySelector('.detail-original-link');
+        if (originalLink) originalLink.href = image.currentSrc || image.src;
+        if (fallback) fallback.hidden = true;
+      } else {
+        if (!image.dataset.artworkStage && image.dataset.pngSrc) {
+          image.dataset.artworkStage = 'png';
+          image.classList.remove('artwork-loaded');
+          if (fallback) fallback.textContent = 'Checking PNG artwork…';
+          image.src = image.dataset.pngSrc;
+          return;
+        }
+        var candidates = [];
+        try { candidates = JSON.parse(image.dataset.artworkFallbacks || '[]'); } catch (ignore) {}
+        var fallbackIndex = parseInt(image.dataset.artworkFallbackIndex || '0', 10);
+        if (fallbackIndex < candidates.length) {
+          image.dataset.artworkFallbackIndex = String(fallbackIndex + 1);
+          image.dataset.artworkStage = 'fallback-' + fallbackIndex;
+          image.classList.remove('artwork-loaded');
+          if (fallback) fallback.textContent = 'Checking verified original…';
+          image.src = candidates[fallbackIndex];
+          return;
+        }
+        image.dataset.artworkStage = 'missing';
+        image.hidden = true;
+        if (image.closest('.detail-art-panel')) {
+          var unavailableLink = document.querySelector('.detail-original-link');
+          if (unavailableLink) {
+            unavailableLink.removeAttribute('href');
+            unavailableLink.setAttribute('aria-disabled', 'true');
+            unavailableLink.textContent = 'Original image unavailable';
+          }
+        }
+        if (fallback) {
+          fallback.textContent = 'Original artwork unavailable';
+          fallback.hidden = false;
+        } else {
+          var message = document.createElement('span');
+          message.className = 'artwork-fallback table-art-fallback';
+          message.setAttribute('role', 'status');
+          message.textContent = 'Artwork unavailable';
+          image.insertAdjacentElement('afterend', message);
+        }
+      }
+    }
+    document.addEventListener('load', setArtworkState, true);
+    document.addEventListener('error', setArtworkState, true);
+    </script>
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
     <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
-    {# Popper #}
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    {# Bootstrap #}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
-    {# FontAwesome #}
-    <script src="https://use.fontawesome.com/e33d503066.js"></script>
-
-    {# Scripts, Custom #}
     <script src="{{ url_for('static', filename='js/simplecopy.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.magnific-popup.js') }}"></script>
     {% block btcpayserver_js %}{% endblock %}
-
-    {# Favicon #}
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/RarePepeWorld_logo.png') }}">
-
+    {% if rarepepeworld_logo_available %}<link rel="shortcut icon" href="{{ url_for('static', filename='brand/rarepepeworld-logo.png') }}">{% endif %}
 </head>
-
-<body class="d-flex flex-column min-vh-100" {% block ad_page_on_load %}{% endblock %}>
-<header>
-    <!-- Heading section -->
-    <div id="header-container" class="container-fluid m-0 p-0">
-        <!-- Heading section - title -->
-        <div id="main-header" class="jumbotron jumbotron-fluid mt-0 pt-0 mb-0 pb-4">
-            <div id="header-subcontainer" class="container">
-                <br/>
-                <a id="main-title" href="{{ domain }}">
-                    <h1 id="main-title-heading"><img height="50"
-                                                     src="{{ url_for('static', filename='images/RarePepeWorld_logo.png' ) }}"/>
-                        {{ title }}</h1>
-                </a>
-                <p>{{ subtitle }}</p>
-
-                <!-- Heading section - Search -->
-                <div id="section-search" class="container">
-                    <form id="section-search-form" action="/search/" method="post">
-                        <div id="section-search-form-div" class="input-group rounded">
-                            <input id="search-input" name='search_text' type="search" class="form-control rounded"
-                                   placeholder="Search" aria-label="Search" aria-describedby="search-addon"/>
-                            <button class="input-group-text border-0" id="search-addon" type="submit"><i
-                                    class="fa fa-search"></i></button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<body {% block ad_page_on_load %}{% endblock %}>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="site-header">
+    <div class="brand-band">
+      <div class="brand-band-inner">
+        <a class="brand-identity" href="/" aria-label="Rare Pepe World home">
+          {% if rarepepeworld_logo_available %}
+            <img src="{{ url_for('static', filename='brand/rarepepeworld-logo.png') }}" alt="" class="brand-logo-image" aria-hidden="true">
+          {% endif %}
+          <span class="brand-copy">
+            <span class="brand-mark">RARE PEPE WORLD</span>
+            <span class="brand-tagline">Trading Bitcoin for frogs since 2016</span>
+          </span>
+        </a>
+        <form id="site-search" class="header-search" action="/search/" method="post" role="search">
+          <label class="sr-only" for="search-input">Search card asset names or Bitcoin addresses</label>
+          <input id="search-input" name="search_text" type="search" placeholder="Asset name or address" autocomplete="off">
+          <button type="submit" aria-label="Search">
+            <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="nav-band">
+      <div class="nav-inner">
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open navigation">
+          <span></span><span></span>
+        </button>
+        <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+          <a href="/" {% if request.endpoint == 'index' %}aria-current="page"{% endif %}>Home</a>
+          <a href="/search/PEPE/" {% if request.path.rstrip('/') == '/search/PEPE' %}aria-current="page"{% endif %}>All Pepes</a>
+          <a href="/faq/" {% if request.endpoint == 'faq' %}aria-current="page"{% endif %}>FAQ</a>
+          <a href="#site-search">Search</a>
+          <a href="https://wiki.pepe.wtf/" target="_blank" rel="noopener noreferrer">Book of Kek</a>
+        </nav>
+      </div>
     </div>
 </header>
-<content>
+<main id="main-content">
     {% block content %}{% endblock %}
-</content>
-
-<footer class="mt-auto">
-    <!-- Footer section -->
-    <div id="footer" class="jumbotron jumbotron-fluid m-0 p-1">
-        <p><a href="/faq">FAQ</a></p>
-{#        <p><a href="/advertise">Advertise Pepe!</a></p>#}
-        <p id="feedback">
-            <a href="mailto:rarepepeworld@pm.me">
-                <img width="50" src="{{ url_for('static', filename='images/email.png') }}">
-            <a href="https://twitter.com/rarepepeworld">
-                <img width="50" src="{{ url_for('static', filename='images/twitter.png') }}">
-            </a>
-        </p>
-        <p id="copyright">&copy;2021 RarePepeWorld.com</p>
-        <p id="rights-reserved">All rights reserved</p>
+</main>
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-about">
+            <a class="footer-wordmark" href="/">RARE PEPE WORLD</a>
+            <p>An independent archive of Rare Pepe art and Counterparty asset records on Bitcoin.</p>
+        </div>
+        <nav class="footer-links" aria-label="Project links">
+            <a href="/faq/">FAQ</a>
+            <a href="https://tokenscan.io/asset/RAREPEPE" target="_blank" rel="noopener">Counterparty asset record</a>
+            <a href="https://twitter.com/rarepepeworld" target="_blank" rel="noopener">Project updates</a>
+            <a href="https://x.com/JuanSGalt" target="_blank" rel="noopener noreferrer">Contact</a>
+        </nav>
+        <div class="footer-legal"><span>RarePepeWorld™ 2026</span><span>Originally created and preserved by <a href="https://juangalt.com/" target="_blank" rel="noopener noreferrer">JuanGalt</a> · Modified and maintained by <a href="https://x.com/JanXBTC" target="_blank" rel="noopener noreferrer">Jan</a></span></div>
     </div>
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.menu-toggle');
+  var nav = document.getElementById('primary-nav');
+  if (toggle && nav) toggle.addEventListener('click', function () {
+    var open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    toggle.setAttribute('aria-label', open ? 'Open navigation' : 'Close navigation');
+    nav.classList.toggle('is-open', !open);
+  });
+});
+</script>
+<script src="{{ url_for('static', filename='js/card-transition.js') }}" defer onerror="document.documentElement.classList.remove('rpw-transition-entering')"></script>
 </body>
 </html>

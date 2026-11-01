@@ -250,15 +250,19 @@ Ensure the user that will run the site scripts has appropriate access to the fil
 
 > ``` sudo chown -R username:username /var/www/rpw/static/qr/ ```
 
-Download here: [Site Images](https://mega.nz/file/I7pnmZza#dhQy6fSE0gYq76f4eCGNSB3hikzrpxQ2D5LhC73zejg), 
-[Pepe Images](https://mega.nz/file/B7xHmBgY#UayA0YzRgGJfCmDcgra0dd5-YXh9rg1ZTKjbroO-Zf4)
+The original Rare Pepe card artwork is not included in Git. The application uses the persistent
+`rpw/static/artwork_cache/` when available, then falls back to TokenScan JPG/PNG and verified originals from
+RarePepes.com. These external providers can change or become unavailable. The cache is ignored by Git and should be
+backed up separately:
 
-Copy the image files to the paths.  No files need to be added to the *qr* path; they will be created by the site.
+> ``` tar -czf rarepepe-artwork-cache.tar.gz -C rpw/static artwork_cache ```
 
+Restore it with:
 
-> ``` tar xvfz PepeImages.tar.gz -C /var/www/rpw/static/ ```
+> ``` tar -xzf rarepepe-artwork-cache.tar.gz -C rpw/static ```
 
-> ``` tar xvfz SiteImages.tar.gz -C /var/www/rpw/static/ ```
+Legacy `pepe_images` files remain optional. The separate `images` and `qr` paths are still used for regular site
+assets and payment QR codes; QR files are created by the site.
 
 ### Local Run
 
@@ -269,6 +273,9 @@ By default, those scripts will :
 * Activate the python environment
 * Sets the appriate environmental variables
 * launches the Flask server to the local network or via the ip address
+
+For local development, install `requirements.txt`, configure `.env` and run `./run_dev.sh`. The helper binds Flask
+to `127.0.0.1:55000`; it uses `Settings_dev.py` when a local `Settings.py` is not present.
 
 Via these scripts, the site is accessed by navigating to http://localhost:55000, or http://ip-address:55000.
 

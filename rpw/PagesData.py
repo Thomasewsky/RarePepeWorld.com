@@ -1,5 +1,5 @@
 # --*-- coding:utf-8 --*--
-from random import randint
+from random import randint, sample
 
 from bs4 import BeautifulSoup as bs
 from flask import url_for, Markup
@@ -9,17 +9,71 @@ import re
 import hashlib
 import hmac
 import logging
+import json
+from pathlib import Path
+from threading import Lock
+from urllib.parse import quote
 
 import Settings
+from rpw.ExternalMetadata import get_estimated_value, resolve_description, verified_directory_url
 from rpw.DataConnectors import DBConnector, BTCPayServerConnector
 from rpw.QueryTools import PepeData, PriceTool, BTCPayServerData, AdvertisingData
 from rpw.Utils import Paginator
 
 pepe_images_url_relative = Settings.Sources['pepe_data']['images_path'].replace(
     Settings.Main['base_path'] + '/rpw/static/', '')
+artwork_cache_static_path = Path(Settings.Main['base_path']) / 'rpw' / 'static' / 'artwork_cache'
+artwork_cache_manifest_path = artwork_cache_static_path / 'manifest.json'
 
 class Formats:
     """ Class for handling the various Counterparty formats and formatting data for the site presentation. """
+
+    # Formats verified against TokenScan, used for crawler metadata which cannot run browser fallbacks.
+    TOKENSCAN_VERIFIED_FORMATS = {
+        'RAREPEPE': 'jpg',
+        'JWPEPE': 'jpg',
+        'BACHELORPEPE': 'jpg',
+        'PEPETRADERS': 'png',
+        'BACKPAGEPEPE': 'png',
+    }
+    _artwork_manifest = None
+    _artwork_manifest_mtime = None
+    _artwork_manifest_lock = Lock()
+
+    @staticmethod
+    def get_artwork_manifest() -> dict:
+        """Load the ignored local audit manifest and refresh it when its atomic file changes."""
+        try:
+            modified = artwork_cache_manifest_path.stat().st_mtime_ns
+        except OSError:
+            return {}
+        if Formats._artwork_manifest is not None and Formats._artwork_manifest_mtime == modified:
+            return Formats._artwork_manifest
+        with Formats._artwork_manifest_lock:
+            try:
+                modified = artwork_cache_manifest_path.stat().st_mtime_ns
+                if Formats._artwork_manifest is None or Formats._artwork_manifest_mtime != modified:
+                    with artwork_cache_manifest_path.open('r', encoding='utf-8') as manifest_file:
+                        manifest = json.load(manifest_file)
+                    Formats._artwork_manifest = manifest.get('assets', {})
+                    Formats._artwork_manifest_mtime = modified
+            except (OSError, ValueError, TypeError):
+                return {}
+        return Formats._artwork_manifest or {}
+
+    @staticmethod
+    def has_verified_cached_artwork(pepe_name: str) -> bool:
+        """Return whether the manifest points to a verified, present local original."""
+        record = Formats.get_artwork_manifest().get(str(pepe_name), {})
+        local_filename = record.get('local_filename', '')
+        if record.get('verification_status') != 'VERIFIED' or not local_filename.startswith('artwork_cache/'):
+            return False
+        cached_path = (Path(Settings.Main['base_path']) / 'rpw' / 'static' / local_filename).resolve()
+        try:
+            cached_path.relative_to(artwork_cache_static_path.resolve())
+            return cached_path.is_file()
+        except (ValueError, OSError):
+            return False
 
     def __init__(self):
         pass
@@ -74,14 +128,12 @@ class Formats:
         :param satoshis: value of satoshis
         :return: string formatted
         """
-        btc_unit_str = '&#x20BF;'
-        sats_unit_str = '&#x26A1;'
         if satoshis >= 1_000_000:
             value_str = f"{satoshis / 10 ** 8:,.8f}"
-            price_str = f"{btc_unit_str} {value_str[:6]}"
+            price_str = f"BTC {value_str[:6]}"
 
         else:
-            price_str = f"{sats_unit_str} {int(satoshis):,}"
+            price_str = f"{int(satoshis):,} sats"
         return Markup(price_str)
 
     @staticmethod
@@ -145,10 +197,95 @@ class Formats:
         :param pepe_name: name of pepe to request image name for
         :return: url string to the image
         """
-        return url_for(
-            'static',
-            filename=pepe_images_url_relative + pepe_query_tool.get_pepe_image_filename(
-                pepe_name=pepe_name))
+        return f"https://tokenscan.io/img/cards/{quote(str(pepe_name), safe='')}.jpg"
+
+    @staticmethod
+    def get_pepe_png_image_url(pepe_query_tool: PepeData, pepe_name: str) -> str:
+        """Return the PNG alternative for this exact Counterparty asset identifier."""
+        return f"https://tokenscan.io/img/cards/{quote(str(pepe_name), safe='')}.png"
+
+    @staticmethod
+    def get_pepe_local_image_url(pepe_query_tool: PepeData, pepe_name: str) -> str:
+        """Return the historical local image URL only when the original file exists."""
+        filename = pepe_query_tool.get_pepe_image_filename(pepe_name=pepe_name)
+        if not filename:
+            return ''
+        image_path = Path(Settings.Sources['pepe_data']['images_path']) / filename
+        if not image_path.is_file():
+            return ''
+        return url_for('static', filename=pepe_images_url_relative + filename)
+
+    @staticmethod
+    def get_pepe_artwork(pepe_query_tool: PepeData, pepe_name: str) -> dict:
+        """Resolve local verified originals first, with remote providers retained as fallbacks."""
+        record = Formats.get_artwork_manifest().get(str(pepe_name), {})
+        cached_url = ''
+        local_filename = record.get('local_filename', '')
+        if record.get('verification_status') == 'VERIFIED' and local_filename.startswith('artwork_cache/'):
+            cached_path = (Path(Settings.Main['base_path']) / 'rpw' / 'static' / local_filename).resolve()
+            try:
+                cached_path.relative_to(artwork_cache_static_path.resolve())
+                if cached_path.is_file():
+                    cached_url = url_for('static', filename=local_filename)
+            except (ValueError, OSError):
+                pass
+        fallback_urls = []
+        tokenscan_urls = [Formats.get_pepe_image_url(pepe_query_tool, pepe_name),
+                          Formats.get_pepe_png_image_url(pepe_query_tool, pepe_name)]
+        verified_source = record.get('source_url', '')
+        if (record.get('verification_status') == 'VERIFIED'
+                and record.get('source_provider', '').startswith('tokenscan_')
+                and verified_source.startswith('https://tokenscan.io/img/cards/')):
+            tokenscan_urls = [verified_source] + [url for url in tokenscan_urls if url != verified_source]
+        if cached_url:
+            fallback_urls.extend(tokenscan_urls)
+        rarepepes_url = record.get('source_url', '')
+        if (record.get('verification_status') == 'VERIFIED'
+                and record.get('source_provider') == 'rarepepes.com'
+                and rarepepes_url.startswith('https://rarepepes.com/')):
+            fallback_urls.append(rarepepes_url)
+        legacy_url = Formats.get_pepe_local_image_url(pepe_query_tool, pepe_name)
+        if legacy_url:
+            fallback_urls.append(legacy_url)
+        fallback_urls = list(dict.fromkeys(fallback_urls))
+        return {
+            'pepe_image_url': cached_url or Formats.get_pepe_image_url(pepe_query_tool, pepe_name),
+            'pepe_png_image_url': '' if cached_url else Formats.get_pepe_png_image_url(pepe_query_tool, pepe_name),
+            'pepe_artwork_fallback_urls': fallback_urls,
+        }
+
+    @staticmethod
+    def get_pepe_opengraph_image_url(pepe_query_tool: PepeData, pepe_name: str) -> str:
+        """Use only a verified TokenScan format or an installed local original for crawler metadata."""
+        record = Formats.get_artwork_manifest().get(str(pepe_name), {})
+        if record.get('verification_status') == 'VERIFIED':
+            cached = record.get('local_filename', '')
+            cached_path = (Path(Settings.Main['base_path']) / 'rpw' / 'static' / cached).resolve() if cached else None
+            if cached_path:
+                try:
+                    cached_path.relative_to(artwork_cache_static_path.resolve())
+                    if cached_path.is_file():
+                        return url_for('static', filename=cached, _external=True)
+                except (ValueError, OSError):
+                    pass
+        if (record.get('verification_status') == 'VERIFIED'
+                and record.get('source_provider', '').startswith('tokenscan_')
+                and record.get('source_url', '').startswith('https://tokenscan.io/img/cards/')):
+            return record['source_url']
+        if record.get('verification_status') == 'VERIFIED' and record.get('source_provider') == 'rarepepes.com':
+            source_url = record.get('source_url', '')
+            source_url = record.get('source_url', '')
+            if source_url.startswith('https://rarepepes.com/'):
+                return source_url
+        extension = Formats.TOKENSCAN_VERIFIED_FORMATS.get(str(pepe_name))
+        if extension:
+            return f"https://tokenscan.io/img/cards/{quote(str(pepe_name), safe='')}.{extension}"
+        legacy = pepe_query_tool.get_pepe_image_filename(pepe_name)
+        if legacy:
+            local_path = Path(Settings.Sources['pepe_data']['images_path']) / legacy
+            if local_path.is_file():
+                return url_for('static', filename=pepe_images_url_relative + legacy, _external=True)
+        return ''
 
     @staticmethod
     def string_to_int(in_str: str) -> str or bool:
@@ -231,11 +368,19 @@ class IndexPage:
                 pepe_query_tool=pepe_query_tool,
                 loggers=loggers
             )
+        introductory_pepe = None
+        if 'RAREPEPE' in pepe_query_tool.pepe_names:
+            introductory_pepe = {
+                'pepe_name': 'RAREPEPE',
+                'pepe_url': '/RAREPEPE',
+                **Formats.get_pepe_artwork(pepe_query_tool, 'RAREPEPE'),
+            }
         index_data = {
             **general_page_data,
             'display_data': data_view,
             'show_latest_dispensers': show_latest_dispensers,
-            'featured_pepes_view_data': featured_pepes_view
+            'featured_pepes_view_data': featured_pepes_view,
+            'introductory_pepe': introductory_pepe,
         }
         db_connection.close()
 
@@ -364,6 +509,10 @@ class PepePage:
         price_tool = PriceTool(db_connection, loggers=loggers)
 
         pepe_details = pepe_query_tool.get_pepe_details(pepe_name)
+        # These optional external sources are cached and failure-isolated; core on-chain data
+        # and the artwork path remain entirely local to the existing application.
+        pepe_description = resolve_description(pepe_name, pepe_details.get('description'))
+        estimated_value = get_estimated_value(pepe_name)
 
         pepe_dispensers_data = PepeDispensers.create(pepe_name,
                                                      pepe_query_tool=pepe_query_tool,
@@ -426,13 +575,18 @@ class PepePage:
             'pepe_pepecash_orders': pepe_pepecash_orders_data,
             'pepe_holders': pepe_holders_data,
             'pepe_name': pepe_name,
-            'opengraph_image_url': pepe_dispensers_data['pepe_image_url'],
+            'opengraph_image_url': Formats.get_pepe_opengraph_image_url(pepe_query_tool, pepe_name),
             'supply': Formats.pepe_normalized_supply_str(pepe_details['supply'], pepe_details['divisible']),
             'series': pepe_details['series'],
-            'pepe_rarepepedirectory_url': pepe_details['rarepepedirectory_url'],
+            'pepe_rarepepedirectory_url': verified_directory_url(pepe_details.get('rarepepedirectory_url')),
+            'pepe_description': pepe_description,
+            'estimated_value': estimated_value,
             'pepe_xchain_url': f"https://xchain.io/asset/{pepe_name}",
             'pepe_artist': pepe_details['source'],
+            'pepe_holder_count': len(pepe_holders_data['rows']) + max(0, pepe_holders_data['remaining_holders_count']),
             'pepe_image_url': pepe_dispensers_data['pepe_image_url'],
+            'pepe_png_image_url': pepe_dispensers_data['pepe_png_image_url'],
+            'pepe_artwork_fallback_urls': pepe_dispensers_data['pepe_artwork_fallback_urls'],
             'latest_price': "Under development",
             'pepe_images': pepe_query_tool.pepe_images,
             'dispenser_number': dispenser_number,
@@ -826,22 +980,33 @@ class FeaturedPepes:
         """
         if loggers is None:
             loggers = {'data': logging.getLogger('data')}
-        featured_pepes_list = pepe_query_tool.get_featured_pepes()
+        # Sample only exact assets present in MariaDB and backed by a verified,
+        # locally cached original. This keeps selection independent of network
+        # availability and avoids loading holder, order, or dispenser records.
+        manifest = Formats.get_artwork_manifest()
+        eligible_assets = [
+            name for name in dict.fromkeys(pepe_query_tool.pepe_names)
+            if name != 'XCP'
+            and manifest.get(name, {}).get('verification_status') == 'VERIFIED'
+            and manifest.get(name, {}).get('local_filename', '').startswith('artwork_cache/')
+        ]
+        featured_pepes_list = []
+        for name in sample(eligible_assets, len(eligible_assets)):
+            if Formats.has_verified_cached_artwork(name):
+                featured_pepes_list.append(name)
+                if len(featured_pepes_list) == 5:
+                    break
         loggers['data'].info(f"featured_pepes_list: {pformat(featured_pepes_list)}")
         featured_pepes = {}
         for featured_pepe in featured_pepes_list:
-            if featured_pepe == 'PUMPURPEPE':
-                pepe_url = url_for('advertise')
-                pepe_image_url = url_for('static',
-                                         filename=f"images/PUMPURPEPE.png")
-            else:
-                pepe_url = f"/{featured_pepe}"
-                pepe_image_url = url_for('static',
-                                         filename=pepe_images_url_relative + pepe_query_tool.
-                                         get_pepe_image_filename(featured_pepe))
+            pepe_url = f"/{featured_pepe}"
+            artwork = Formats.get_pepe_artwork(pepe_query_tool, featured_pepe)
+            pepe_details = pepe_query_tool.get_pepe_details(featured_pepe)
+            artwork['pepe_is_artwork'] = True
             featured = {
                 'pepe_url': pepe_url,
-                'pepe_image_url': pepe_image_url
+                'series': pepe_details.get('series'),
+                **artwork
             }
             featured_pepes[featured_pepe] = featured
         loggers['data'].info(f"Featured pepes data: {pformat(featured_pepes)}")
@@ -875,15 +1040,12 @@ class LatestDispensers:
         loggers['data'].info(f"cards_data:\n{pformat(cards_data)}")
         for i, card_data in enumerate(cards_data):
             pepe_details = pepe_query_tool.get_pepe_details(card_data['asset'])
-            pepe_image_url = url_for(
-                'static',
-                filename=pepe_images_url_relative + pepe_query_tool.get_pepe_image_filename(
-                    pepe_name=card_data['asset']))
+            artwork = Formats.get_pepe_artwork(pepe_query_tool, card_data['asset'])
             # pepe_real_supply = pepe_query_tool.derive_pepe_real_supply(card_data['asset'])
             card_values = {
                 'pepe_name': card_data['asset'],
                 'pepe_url': f"/{card_data['asset']}",
-                'pepe_image_url': pepe_image_url,
+                **artwork,
                 'stock': Formats.pepe_quantity_str(
                     card_data['give_remaining'], pepe_details['divisible']),
                 'supply': Formats.pepe_normalized_supply_str(pepe_details['real_supply'], pepe_details['divisible']),
@@ -921,15 +1083,12 @@ class RandomPepes:
         loggers['data'].info(f"random_pepes:{pformat(random_pepes)}")
         for i, pepe_name in enumerate(random_pepes):
             pepe_details = pepe_query_tool.get_pepe_details(pepe_name)
-            pepe_image_url = url_for(
-                'static',
-                filename=pepe_images_url_relative + pepe_query_tool.get_pepe_image_filename(
-                                                             pepe_name=pepe_details['asset']))
+            artwork = Formats.get_pepe_artwork(pepe_query_tool, pepe_details['asset'])
             real_supply_str = Formats.pepe_quantity_str(pepe_details['real_supply'], pepe_details['divisible'])
             card_details = {
                 'pepe_name': pepe_details['asset'],
                 'pepe_url': f"/{pepe_details['asset']}",
-                'pepe_image_url': pepe_image_url,
+                **artwork,
                 'line_1': f"Series: {pepe_details['series']}",
                 'line_2': f"Supply: {real_supply_str}"
             }
@@ -969,21 +1128,20 @@ class PepeDispensers:
         pepe_dispensers_data = pepe_query_tool.get_pepe_dispensers(pepe_name)
         pepe_dispensers_data = sorted(pepe_dispensers_data, key=lambda x: x['satoshirate'] / x['give_quantity'])
 
-        pepe_image_url = url_for(
-            'static',
-            filename=pepe_images_url_relative + pepe_query_tool.pepe_images[pepe_name])
+        artwork = Formats.get_pepe_artwork(pepe_query_tool, pepe_name)
         table_headers = ['Pepe', 'Stock', 'Pay', 'Receive'] if not fiat_enabled \
             else ['Pepe', 'Stock', 'USD', 'Pay', 'Receive']
         data_output = {
             'table_title': "BTC Dispensers",
             'table_headers': table_headers,
-            'pepe_image_url': pepe_image_url,
+            'pepe_name': pepe_name,
+            **artwork,
             'rows': []
         }
         for i, pepe_dispenser_data in enumerate(pepe_dispensers_data):
             row_values = {
                 'pepe_url': f"/{pepe_name}" + f"?d={i}",
-                'pepe_image_url': pepe_image_url,
+                **artwork,
                 'address': pepe_dispenser_data['source'],
                 'address_truncated': pepe_dispenser_data['source'][:6] + '...',
                 'stock': Formats.pepe_quantity_str(
@@ -1042,13 +1200,11 @@ class PepeOrders:
             'get': 'buy',
             'give': 'sell'
         }
-        pepe_image_url = url_for(
-            'static',
-            filename=pepe_images_url_relative + pepe_query_tool.pepe_images[pepe_name])
+        artwork = Formats.get_pepe_artwork(pepe_query_tool, pepe_name)
         pepe_thumbnail_url = url_for(
-            'static', filename='pepes/images_thumbnails/') + pepe_query_tool.pepe_images[pepe_name]
+            'static', filename='pepes/images_thumbnails/') + pepe_query_tool.get_pepe_image_filename(pepe_name)
         base_asset_image_url = url_for(
-            'static', filename='pepes/images_thumbnails/') + pepe_query_tool.pepe_images[base_asset]
+            'static', filename='pepes/images_thumbnails/') + pepe_query_tool.get_pepe_image_filename(base_asset)
         table_headers = ['BTC', 'Price', 'Stock'] if not fiat_enabled else ['USD', 'BTC', 'Price', 'Stock']
         data_output = {
             'table_title': f'{base_asset} DEX',
@@ -1058,7 +1214,7 @@ class PepeOrders:
             'base_asset_header': 'Price',
             'pepe_asset_header': 'Stock',
             'pepe_url': f"/{pepe_name}",
-            'pepe_image_url': pepe_image_url,
+            **artwork,
             'pepe_thumbnail_url': pepe_thumbnail_url,
             'base_asset_url': f"/{base_asset}",
             'base_asset_image_url': base_asset_image_url,
@@ -1227,6 +1383,7 @@ class CardList:
 
         if len(all_cards) > 0:
             cards_paginated = Paginator.paginate(all_cards, cards_per_page)  # create pagination of the current cards
+            page_number = min(max(page_number, 0), len(cards_paginated) - 1)
             card_results_output_data['cards'] = cards_paginated[
                 page_number]  # set the list of cards to the current page
             page_count = len(cards_paginated)
@@ -1261,7 +1418,7 @@ class SearchResultCard:
         search_result_card = {
             'pepe_name': card_data['asset'],
             'pepe_url': f"/{card_data['asset']}",
-            'pepe_image_url': Formats.get_pepe_image_url(pepe_query_tool, card_data['asset']),
+            **Formats.get_pepe_artwork(pepe_query_tool, card_data['asset']),
             'line_1': f"Series: {card_data['series']}",
             'line_2': f"Supply: {real_supply_str}"
         }
@@ -1291,10 +1448,7 @@ class ArtistCollectionCard:
         artist_collection_card = {
             'pepe_name': card_data['asset'],
             'pepe_url': f"/{card_data['asset']}",
-            'pepe_image_url': url_for(
-                'static',
-                filename=pepe_images_url_relative + pepe_query_tool.get_pepe_image_filename(
-                pepe_name=card_data['asset'])),
+            **Formats.get_pepe_artwork(pepe_query_tool, card_data['asset']),
             'line_1': f"Series: {card_data['series']}",
             'line_2': f"Supply: {real_supply_str}"
         }
@@ -1326,11 +1480,7 @@ class AddressCollectionCard:
         address_collection_card = {
             'pepe_name': card_data['asset'],
             'pepe_url': f"/{card_data['asset']}",
-            'pepe_image_url':
-                url_for(
-                    'static',
-                    filename=pepe_images_url_relative + pepe_query_tool.get_pepe_image_filename(
-                        pepe_name=card_data['asset'])),
+            **Formats.get_pepe_artwork(pepe_query_tool, card_data['asset']),
             'line_1': f"Owns {own} of {real_supply_str}"
         }
         loggers['data'].info(f"Search results data: {pformat(address_collection_card)}")

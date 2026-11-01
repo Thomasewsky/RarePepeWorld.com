@@ -1,13 +1,8 @@
 {% extends 'base.html' %}
-{% block title %} - Search: {{ search_text }}{% endblock %}
 {% from 'macros.html' import show_pepe_listing %}
-
+{% block title %} — Search: {{ search_text }}{% endblock %}
 {% block content %}
-
-    {% if not are_matches %}
-        <p>...aaaaaand there's no Pepes here. Try something else?</p>
-    {% else %}
-        {{ show_pepe_listing(search_results_data, search_text) }}
-    {% endif %}
-
+<header class="search-intro"><p class="eyebrow">Archive search</p><h1>Results for “{{ search_text }}”</h1></header>
+{% if not are_matches %}<div class="empty-state search-empty"><p class="eyebrow">No matching records</p><h2>Nothing found for this search.</h2><p>Try a different card name or Bitcoin address.</p><form class="empty-search-form" action="/search/" method="post"><label class="sr-only" for="empty-search">Search the archive</label><input id="empty-search" name="search_text" value="{{ search_text }}" type="search"><button class="button button-primary" type="submit">Search again</button></form><a class="text-link" href="/#featured-pepes">Return to featured cards</a></div>
+{% else %}{{ show_pepe_listing(search_results_data, search_text) }}{% endif %}
 {% endblock %}
